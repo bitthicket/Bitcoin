@@ -1,0 +1,10 @@
+RESTRICTION: >= netstandard2.0
+NUGET
+  remote: https://api.nuget.org/v3/index.json
+    FSharp.Core (4.3.4)
+    Inferno (1.5)
+
+GROUP Build
+NUGET
+  remote: https://api.nuget.org/v3/index.json
+    FAKE (4.64.13)
