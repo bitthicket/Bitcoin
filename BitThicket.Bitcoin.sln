@@ -1,4 +1,4 @@
-
+﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 2013
 VisualStudioVersion = 12.0.31101.0
@@ -8,6 +8,10 @@ EndProject
 Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "BitThicket.Bitcoin", "src\BitThicket.Bitcoin\BitThicket.Bitcoin.fsproj", "{3C9B1EC6-21AE-4B63-823C-58B83ADB3119}"
 EndProject
 Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "BitThicket.Bitcoin.Cryptography", "src\BitThicket.Bitcoin.Cryptography\BitThicket.Bitcoin.Cryptography.fsproj", "{3E54D486-4038-4A65-A570-FABF76CBE768}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "test", "test", "{3BE2CB68-5E3C-40EC-AFE6-47AA181EF3BC}"
+EndProject
+Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "BitThicket.Bitcoin.Cryptography.Test", "test\BitThicket.Bitcoin.Cryptography.Test\BitThicket.Bitcoin.Cryptography.Test.fsproj", "{2E162A71-D4DA-4787-BEB6-4DC54D3AA14F}"
 EndProject
 Global
 	GlobalSection(SolutionProperties) = preSolution
@@ -46,9 +50,22 @@ Global
 		{3E54D486-4038-4A65-A570-FABF76CBE768}.Release|x64.Build.0 = Release|x64
 		{3E54D486-4038-4A65-A570-FABF76CBE768}.Release|x86.ActiveCfg = Release|x86
 		{3E54D486-4038-4A65-A570-FABF76CBE768}.Release|x86.Build.0 = Release|x86
+		{2E162A71-D4DA-4787-BEB6-4DC54D3AA14F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{2E162A71-D4DA-4787-BEB6-4DC54D3AA14F}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{2E162A71-D4DA-4787-BEB6-4DC54D3AA14F}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{2E162A71-D4DA-4787-BEB6-4DC54D3AA14F}.Debug|x64.Build.0 = Debug|Any CPU
+		{2E162A71-D4DA-4787-BEB6-4DC54D3AA14F}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{2E162A71-D4DA-4787-BEB6-4DC54D3AA14F}.Debug|x86.Build.0 = Debug|Any CPU
+		{2E162A71-D4DA-4787-BEB6-4DC54D3AA14F}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{2E162A71-D4DA-4787-BEB6-4DC54D3AA14F}.Release|Any CPU.Build.0 = Release|Any CPU
+		{2E162A71-D4DA-4787-BEB6-4DC54D3AA14F}.Release|x64.ActiveCfg = Release|Any CPU
+		{2E162A71-D4DA-4787-BEB6-4DC54D3AA14F}.Release|x64.Build.0 = Release|Any CPU
+		{2E162A71-D4DA-4787-BEB6-4DC54D3AA14F}.Release|x86.ActiveCfg = Release|Any CPU
+		{2E162A71-D4DA-4787-BEB6-4DC54D3AA14F}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(NestedProjects) = preSolution
 		{3C9B1EC6-21AE-4B63-823C-58B83ADB3119} = {7F264EF7-0EA1-482C-989F-61882410FE60}
 		{3E54D486-4038-4A65-A570-FABF76CBE768} = {7F264EF7-0EA1-482C-989F-61882410FE60}
+		{2E162A71-D4DA-4787-BEB6-4DC54D3AA14F} = {3BE2CB68-5E3C-40EC-AFE6-47AA181EF3BC}
 	EndGlobalSection
 EndGlobal
