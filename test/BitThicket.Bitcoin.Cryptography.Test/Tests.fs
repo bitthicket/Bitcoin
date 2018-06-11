@@ -1,50 +1,55 @@
 module Tests
 
-open System
-open System.Security.Cryptography
 open Expecto
-
+open Expecto.Flip
 open BitThicket.Bitcoin.Cryptography
-open System
 
-
-let getCurve (prime : int) (a : int) (b : int) (generator : (int*int) option) (order : int) (cofactor : int) =
-  let mutable curve = ECCurve(A = BitConverter.GetBytes(a),
-                              B = BitConverter.GetBytes(b),
-                              Cofactor = BitConverter.GetBytes(cofactor),
-                              CurveType = ECCurve.ECCurveType.PrimeShortWeierstrass,
-                              Order = BitConverter.GetBytes(order),
-                              Prime = BitConverter.GetBytes(prime))
-
-  match generator with
-  | Some (gx, gy) -> curve.G <- ECPoint(X = BitConverter.GetBytes(gx), Y = BitConverter.GetBytes(gy))
-  | None -> ()
-  
-  curve
-
-let getPoint(x:int) (y:int) =  ECPoint(X = BitConverter.GetBytes(x), Y = BitConverter.GetBytes(y))
+// [<Tests>]
+// let tests =
+//   testList "EllipticCurve tests" [
+//     // y^2 = x^3 - 7x + 10 mod 127 == (127, -7, 10, G, 133, 1)
+//     // this is using an entire curve instead of a subgroup
+//     // testCase "validate CngKey" <| fun _ ->
+//     //   let k = 
+//   ]
 
 [<Tests>]
-let tests =
-  testList "EllipticCurve tests" [
-    // y^2 = x^3 - 7x + 10 mod 127 == (127, -7, 10, G, 133, 1)
-    // this is using an entire curve instead of a subgroup
-    testCase "(1,2) ⊕ (3,4) ∈ (127, -7, 10, G, 133, 1)" <| fun _ ->
-      let curve = getCurve 127 -7 10 None 133 1
-      let p1 = getPoint 1 2
-      let p2 = getPoint 3 4
-      let rX = 32
-      let rY = 114
+let utilityTests =
+  testList "Utility tests" [
+    testCase "simple stringToBytes" <| fun _ ->
+      let input = "F028"
+      let result = Utility.stringToBytes input
+      let expected = [|0xF0uy; 0x28uy|]
 
-      let (_, result) = ECDsa.add curve p1 p2
-      Expect.isNotNull result.X "result.X was null, supposed to be byte[]"
-      Expect.isNotNull result.Y "result.Y was null, supposed to be byte[]"
-      
-      let X = BitConverter.ToInt32(ReadOnlySpan(result.X))
-      let Y = BitConverter.ToInt32(ReadOnlySpan(result.Y))
-      Expect.equal -rX X "-R.X = result.X"
+      Expect.isOk "failed to convert input" result 
+      match result with | Ok b -> b | _ -> failwith "unexpected result"
+      |> Expect.equal "Produced incorrect output" expected
 
-    testCase "should fail" <| fun _ ->
-      let subject = false
-      Expect.isTrue subject "I should fail because the subject is false."
+    testCase "stringToBytes invalid input" <| fun _ ->
+      let input = "F0287"
+      Utility.stringToBytes input
+      |> Expect.isError "stringToBytes should have failed"
+
+    testCase "stringToBytes empty input" <| fun _ ->
+      let input = ""
+      let result = Utility.stringToBytes input
+      let expected = Array.zeroCreate<byte> 0
+
+      Expect.isOk "stringToBytes should have just returned a zero-length array" result
+      match result with | Ok b -> b | _ -> failwith "unexpected result"
+      |> Expect.equal "Produced incorrect output" expected
+
+    testCase "stringToBytes not-hex input" <| fun _ ->
+      let input = "hello"
+      Utility.stringToBytes input
+      |> Expect.isError "stringToBytes should have failed"
+
+    testCase "stringToBytes lowercase input" <| fun _ ->
+      let input = "f028"
+      let result = Utility.stringToBytes input
+      let expected = [|0xf0uy; 0x28uy|]
+
+      Expect.isOk "stringtoBytes should have parsed lowercase without error" result 
+      match result with | Ok b -> b | _ -> failwith "unexpected result"
+      |> Expect.equal "produced incorrect output" expected
   ]

@@ -1,22 +1,19 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio 2013
-VisualStudioVersion = 12.0.31101.0
+# Visual Studio 15
+VisualStudioVersion = 15.0.27703.2026
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{7F264EF7-0EA1-482C-989F-61882410FE60}"
 EndProject
-Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "BitThicket.Bitcoin", "src\BitThicket.Bitcoin\BitThicket.Bitcoin.fsproj", "{3C9B1EC6-21AE-4B63-823C-58B83ADB3119}"
+Project("{6EC3EE1D-3C4E-46DD-8F32-0CC8E7565705}") = "BitThicket.Bitcoin", "src\BitThicket.Bitcoin\BitThicket.Bitcoin.fsproj", "{3C9B1EC6-21AE-4B63-823C-58B83ADB3119}"
 EndProject
-Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "BitThicket.Bitcoin.Cryptography", "src\BitThicket.Bitcoin.Cryptography\BitThicket.Bitcoin.Cryptography.fsproj", "{3E54D486-4038-4A65-A570-FABF76CBE768}"
+Project("{6EC3EE1D-3C4E-46DD-8F32-0CC8E7565705}") = "BitThicket.Bitcoin.Cryptography", "src\BitThicket.Bitcoin.Cryptography\BitThicket.Bitcoin.Cryptography.fsproj", "{3E54D486-4038-4A65-A570-FABF76CBE768}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "test", "test", "{3BE2CB68-5E3C-40EC-AFE6-47AA181EF3BC}"
 EndProject
-Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "BitThicket.Bitcoin.Cryptography.Test", "test\BitThicket.Bitcoin.Cryptography.Test\BitThicket.Bitcoin.Cryptography.Test.fsproj", "{2E162A71-D4DA-4787-BEB6-4DC54D3AA14F}"
+Project("{6EC3EE1D-3C4E-46DD-8F32-0CC8E7565705}") = "BitThicket.Bitcoin.Cryptography.Test", "test\BitThicket.Bitcoin.Cryptography.Test\BitThicket.Bitcoin.Cryptography.Test.fsproj", "{2E162A71-D4DA-4787-BEB6-4DC54D3AA14F}"
 EndProject
 Global
-	GlobalSection(SolutionProperties) = preSolution
-		HideSolutionNode = FALSE
-	EndGlobalSection
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
 		Debug|x64 = Debug|x64
@@ -40,16 +37,16 @@ Global
 		{3C9B1EC6-21AE-4B63-823C-58B83ADB3119}.Release|x86.Build.0 = Release|Any CPU
 		{3E54D486-4038-4A65-A570-FABF76CBE768}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{3E54D486-4038-4A65-A570-FABF76CBE768}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{3E54D486-4038-4A65-A570-FABF76CBE768}.Debug|x64.ActiveCfg = Debug|x64
-		{3E54D486-4038-4A65-A570-FABF76CBE768}.Debug|x64.Build.0 = Debug|x64
-		{3E54D486-4038-4A65-A570-FABF76CBE768}.Debug|x86.ActiveCfg = Debug|x86
-		{3E54D486-4038-4A65-A570-FABF76CBE768}.Debug|x86.Build.0 = Debug|x86
+		{3E54D486-4038-4A65-A570-FABF76CBE768}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{3E54D486-4038-4A65-A570-FABF76CBE768}.Debug|x64.Build.0 = Debug|Any CPU
+		{3E54D486-4038-4A65-A570-FABF76CBE768}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{3E54D486-4038-4A65-A570-FABF76CBE768}.Debug|x86.Build.0 = Debug|Any CPU
 		{3E54D486-4038-4A65-A570-FABF76CBE768}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{3E54D486-4038-4A65-A570-FABF76CBE768}.Release|Any CPU.Build.0 = Release|Any CPU
-		{3E54D486-4038-4A65-A570-FABF76CBE768}.Release|x64.ActiveCfg = Release|x64
-		{3E54D486-4038-4A65-A570-FABF76CBE768}.Release|x64.Build.0 = Release|x64
-		{3E54D486-4038-4A65-A570-FABF76CBE768}.Release|x86.ActiveCfg = Release|x86
-		{3E54D486-4038-4A65-A570-FABF76CBE768}.Release|x86.Build.0 = Release|x86
+		{3E54D486-4038-4A65-A570-FABF76CBE768}.Release|x64.ActiveCfg = Release|Any CPU
+		{3E54D486-4038-4A65-A570-FABF76CBE768}.Release|x64.Build.0 = Release|Any CPU
+		{3E54D486-4038-4A65-A570-FABF76CBE768}.Release|x86.ActiveCfg = Release|Any CPU
+		{3E54D486-4038-4A65-A570-FABF76CBE768}.Release|x86.Build.0 = Release|Any CPU
 		{2E162A71-D4DA-4787-BEB6-4DC54D3AA14F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{2E162A71-D4DA-4787-BEB6-4DC54D3AA14F}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{2E162A71-D4DA-4787-BEB6-4DC54D3AA14F}.Debug|x64.ActiveCfg = Debug|Any CPU
@@ -63,9 +60,15 @@ Global
 		{2E162A71-D4DA-4787-BEB6-4DC54D3AA14F}.Release|x86.ActiveCfg = Release|Any CPU
 		{2E162A71-D4DA-4787-BEB6-4DC54D3AA14F}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
 	GlobalSection(NestedProjects) = preSolution
 		{3C9B1EC6-21AE-4B63-823C-58B83ADB3119} = {7F264EF7-0EA1-482C-989F-61882410FE60}
 		{3E54D486-4038-4A65-A570-FABF76CBE768} = {7F264EF7-0EA1-482C-989F-61882410FE60}
 		{2E162A71-D4DA-4787-BEB6-4DC54D3AA14F} = {3BE2CB68-5E3C-40EC-AFE6-47AA181EF3BC}
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {47456941-DAE3-4ED0-8D53-55C7A34F1364}
 	EndGlobalSection
 EndGlobal

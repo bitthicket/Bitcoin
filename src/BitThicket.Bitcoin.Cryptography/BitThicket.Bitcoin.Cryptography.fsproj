@@ -6,6 +6,7 @@
     <DebugType>portable</DebugType>
   </PropertyGroup>
   <ItemGroup>
+    <Compile Include="Utility.fs" />
     <Compile Include="ECDsa.fs" />
     <None Include="Script.fsx" />
   </ItemGroup>
