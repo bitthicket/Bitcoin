@@ -4,6 +4,7 @@ framework: >= netstandard2.0
 nuget Expecto
 nuget FAKE
 nuget FSharp.Core
+nuget System.Security.Cryptography.Cng
 
 group Build
 source https://api.nuget.org/v3/index.json
