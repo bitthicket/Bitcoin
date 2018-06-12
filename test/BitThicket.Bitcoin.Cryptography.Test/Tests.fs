@@ -1,17 +1,16 @@
 module Tests
 
+open System
 open Expecto
 open Expecto.Flip
 open BitThicket.Bitcoin.Cryptography
 
-// [<Tests>]
-// let tests =
-//   testList "EllipticCurve tests" [
-//     // y^2 = x^3 - 7x + 10 mod 127 == (127, -7, 10, G, 133, 1)
-//     // this is using an entire curve instead of a subgroup
-//     // testCase "validate CngKey" <| fun _ ->
-//     //   let k = 
-//   ]
+[<Tests>]
+let ecdsaTests =
+  testList "ECDsa tests" [
+    let key = ECDsa.generateKeyPair ECDsa.secp256k1
+    Expect.isNotNull "key shouldn't be null" key
+  ]
 
 [<Tests>]
 let utilityTests =
@@ -52,4 +51,32 @@ let utilityTests =
       Expect.isOk "stringtoBytes should have parsed lowercase without error" result 
       match result with | Ok b -> b | _ -> failwith "unexpected result"
       |> Expect.equal "produced incorrect output" expected
+
+    testCase "bytesToBlob with p63 inputs" <| fun _ ->
+      let k = [|0x1euy; 0x99uy; 0x42uy; 0x3auy; 0x4euy; 0xd2uy; 0x76uy; 0x08uy; 0xa1uy; 0x5auy; 0x26uy; 0x16uy; 0xa2uy; 0xb0uy; 
+                0xe9uy; 0xe5uy; 0x2cuy; 0xeduy; 0x33uy; 0x0auy; 0xc5uy; 0x30uy; 0xeduy; 0xccuy; 0x32uy; 0xc8uy; 0xffuy; 0xc6uy;
+                0xa5uy; 0x26uy; 0xaeuy; 0xdduy|]
+      let x = [|0xF0uy; 0x28uy; 0x89uy; 0x2Buy; 0xADuy; 0x7Euy; 0xD5uy; 0x7Duy; 0x2Fuy; 0xB5uy; 0x7Buy; 0xF3uy; 0x30uy; 0x81uy;
+                0xD5uy; 0xCFuy; 0xCFuy; 0x6Fuy; 0x9Euy; 0xD3uy; 0xD3uy; 0xD7uy; 0xF1uy; 0x59uy; 0xC2uy; 0xE2uy; 0xFFuy; 0xF5uy;
+                0x79uy; 0xDCuy; 0x34uy; 0x1Auy|]
+      let y = [|0x07uy; 0xCFuy; 0x33uy; 0xDAuy; 0x18uy; 0xBDuy; 0x73uy; 0x4Cuy; 0x60uy; 0x0Buy; 0x96uy; 0xA7uy; 0x2Buy; 0xBCuy;
+                0x47uy; 0x49uy; 0xD5uy; 0x14uy; 0x1Cuy; 0x90uy; 0xECuy; 0x8Auy; 0xC3uy; 0x28uy; 0xAEuy; 0x52uy; 0xDDuy; 0xFEuy;
+                0x2Euy; 0x50uy; 0x5Buy; 0xDBuy|]
+      let bytes = Array.concat [BitConverter.GetBytes(Utility.BCRYPT_ECDSA_PRIVATE_P256_MAGIC);
+                                BitConverter.GetBytes(256);
+                                x;y;k]
+
+      let result = Utility.bytesToBlob bytes
+
+      Expect.isOk "bytesToBlob failed" result
+      let blob = match result with | Ok b -> b | _ -> failwith "unexpected result"
+      let X = bigint x
+      Expect.equal "X data didn't convert successfully" X (bigint blob.x)
+
+      let Y = bigint y
+      Expect.equal "Y data didn't convert successfully" Y (bigint blob.y)
+
+      let K = bigint k
+      Expect.equal "K data didn't convert successfully" K (bigint blob.d)
+
   ]

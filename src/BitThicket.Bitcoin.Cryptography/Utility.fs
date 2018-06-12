@@ -1,5 +1,6 @@
 namespace BitThicket.Bitcoin.Cryptography
 
+open System.Runtime.InteropServices
 module Utility = 
     open System
     open System.Globalization
@@ -26,3 +27,29 @@ module Utility =
                 | ex -> Error ex.Message
 
         s2b (Array.zeroCreate<byte> 0) hexString
+
+    let BCRYPT_ECDSA_PRIVATE_P256_MAGIC = 0x32534345
+    [<Struct; CLIMutable; StructLayout(LayoutKind.Sequential)>]
+    type EccPrivateKeyBlob = {
+        magic : int;
+        cbkey : int;
+        [<MarshalAs(UnmanagedType.ByValArray, SizeConst = 32)>]
+        x : byte[];
+        [<MarshalAs(UnmanagedType.ByValArray, SizeConst = 32)>]
+        y : byte[];
+        [<MarshalAs(UnmanagedType.ByValArray, SizeConst = 32)>]
+        d : byte[];
+    }
+
+    let bytesToBlob (bytes:byte[]) =
+        let handle = GCHandle.Alloc(bytes, GCHandleType.Pinned)
+        try
+            try
+                Marshal.PtrToStructure(handle.AddrOfPinnedObject(), typeof<EccPrivateKeyBlob>) :?> EccPrivateKeyBlob
+                |> Ok
+            with
+            | exn -> Error exn.Message
+        finally
+            handle.Free()
+        
+
