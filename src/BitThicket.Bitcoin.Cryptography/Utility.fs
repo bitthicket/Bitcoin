@@ -1,10 +1,13 @@
 namespace BitThicket.Bitcoin.Cryptography
 
-open System.Runtime.InteropServices
+#nowarn "9"
+
 module Utility = 
     open System
     open System.Globalization
+    open System.Runtime.InteropServices
     open System.Text
+    open Microsoft.FSharp.NativeInterop
 
     let hexFold (builder:StringBuilder) (byte:byte) =
         builder.Append(sprintf "%02x" byte)
@@ -28,28 +31,37 @@ module Utility =
 
         s2b (Array.zeroCreate<byte> 0) hexString
 
-    let BCRYPT_ECDSA_PRIVATE_P256_MAGIC = 0x32534345
-    [<Struct; CLIMutable; StructLayout(LayoutKind.Sequential)>]
-    type EccPrivateKeyBlob = {
+    //type EccPrivateBlob256 = Unsafe.EccPrivateBlob256
+    //type EccPublicBlob256 = Unsafe.EccPublicBlob256
+
+    [<Struct; StructLayout(LayoutKind.Sequential)>]
+    type EccPrivateBlob256 = {
         magic : int;
-        cbkey : int;
+        keysize : int;
+        // these are const sized for now because we only ever deal with secp256k1
         [<MarshalAs(UnmanagedType.ByValArray, SizeConst = 32)>]
-        x : byte[];
+        x : byte[] ;
         [<MarshalAs(UnmanagedType.ByValArray, SizeConst = 32)>]
         y : byte[];
         [<MarshalAs(UnmanagedType.ByValArray, SizeConst = 32)>]
         d : byte[];
     }
 
-    let bytesToBlob (bytes:byte[]) =
-        let handle = GCHandle.Alloc(bytes, GCHandleType.Pinned)
-        try
-            try
-                Marshal.PtrToStructure(handle.AddrOfPinnedObject(), typeof<EccPrivateKeyBlob>) :?> EccPrivateKeyBlob
-                |> Ok
-            with
-            | exn -> Error exn.Message
-        finally
-            handle.Free()
-        
+    [<Struct; StructLayout(LayoutKind.Sequential)>]
+    type EccPublicBlob256 = {
+        magic : int;
+        keysize : int;
+        [<MarshalAs(UnmanagedType.ByValArray, SizeConst = 32)>]
+        x : byte[];
+        [<MarshalAs(UnmanagedType.ByValArray, SizeConst = 32)>]
+        y : byte[];
+    }
 
+    let inline private marshalTo<'dst> ptr = Marshal.PtrToStructure(ptr, typeof<'dst>) :?> 'dst
+
+    let inline bytesToEccBlob<'a> (bytes:byte[]) =
+        use ptr = fixed bytes
+        try
+            marshalTo<'a> (NativePtr.toNativeInt ptr) |> Ok
+        with
+        | exn -> Error exn.Message

@@ -10,5 +10,8 @@
     <Compile Include="ECDsa.fs" />
     <None Include="Script.fsx" />
   </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\BitThicket.Bitcoin.Cryptography.Unsafe\BitThicket.Bitcoin.Cryptography.Unsafe.csproj" />
+  </ItemGroup>
   <Import Project="..\..\.paket\Paket.Restore.targets" />
 </Project>
