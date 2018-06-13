@@ -2,21 +2,39 @@ namespace BitThicket.Bitcoin.Cryptography
 
 module ECDsa =
     open System
-    open System.Numerics
     open System.Security.Cryptography
-
-    let getKey (data:byte[]) = 
-        BigInteger(data)
+    open System.Text
 
     let secp256k1 = ECCurve.CreateFromOid(Oid("1.3.132.0.10"))
 
-    let add (curve:ECCurve) (p1:ECPoint) (p2:ECPoint) = 
-        (curve, ECPoint(X = [|0uy|], Y = [|0uy|]))
+    let generateKeyPair (curve:ECCurve) = 
+        let cng = new ECDsaCng(curve)
+        cng.Key
 
-    /// implemented usingt the double-and-add algorithm
-    let multiply (curve:ECCurve) (k:BigInteger) (p:ECPoint) =
-        (ECPoint(), curve)
+    /// params k, x, and y correspond to CngKeyBlobFormat.EccPrivateBlob params d, x, and y respectively
+    let cngKeyFromParams k x y =
+        let blob = Array.concat [BitConverter.GetBytes(Ecc.BCRYPT_ECDSA_PRIVATE_P256_MAGIC); 
+                                 BitConverter.GetBytes(256); x; y; k]
+        CngKey.Import(blob, CngKeyBlobFormat.EccPrivateBlob)
 
-    [<AutoOpen>]
-    module Operators =
-        let (*) k p = multiply (snd p) k (fst p)
+    let exportPublicKey (cngKey:CngKey) =
+        cngKey.Export(CngKeyBlobFormat.EccPublicBlob)
+        |> Utility.bytesToEccBlob<Utility.EccPublicBlob256>
+
+    let exportPrivateKey (cngKey:CngKey) =
+        cngKey.Export(CngKeyBlobFormat.EccPrivateBlob)
+        |> Utility.bytesToEccBlob<Utility.EccPrivateBlob256>
+
+    let formatPublicKey (cngKey:CngKey) =
+        cngKey.Export(CngKeyBlobFormat.EccPublicBlob).[8..]
+        |> Array.fold Utility.hexFold (StringBuilder("04"))
+        |> (fun buf -> buf.ToString())
+
+    let formatPublicKeyCompressed (cngKey:CngKey) =
+        let xbytes = (cngKey.Export(CngKeyBlobFormat.EccPublicBlob)).[8..39]
+        let initialState = match (xbytes.[31] &&& 1uy) with
+                            | 1uy -> StringBuilder("03")
+                            | _ -> StringBuilder("02")
+
+        Array.fold Utility.hexFold initialState xbytes
+        |> (fun buf -> buf.ToString())
