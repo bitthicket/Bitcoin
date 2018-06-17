@@ -1,7 +1,6 @@
 module Tests
 
 open System
-open System.Runtime.InteropServices
 open Expecto
 open Expecto.Flip
 open BitThicket.Bitcoin.Cryptography
@@ -88,16 +87,13 @@ let utilityTests =
     testCase "bytesToBlob with pp63 inputs" <| fun _ ->
       let bytes = testBytes1;
 
-      let result = Utility.bytesToEccBlob<Utility.EccPrivateBlob256> bytes
+      let result = ECDsa.bytesToPrivateEccBlob bytes
 
       Expect.isOk "bytesToBlob failed" result
       let blob = match result with | Ok b -> b | _ -> failwith "unexpected result"
-      let x = bigint testX1
-      Expect.equal "X data didn't convert successfully" x (bigint blob.x)
+      let testPublicKey = Array.concat [testX1;testY1]
+      Expect.sequenceEqual "X data didn't convert successfully" testPublicKey blob.PublicKey
 
-      let y = bigint testY1
-      Expect.equal "Y data didn't convert successfully" y (bigint blob.y)
-
-      let k = bigint testK1
-      Expect.equal "K data didn't convert successfully" k (bigint blob.d)
+      let testPrivateKey = testK1
+      Expect.sequenceEqual "K data didn't convert successfully" testPrivateKey blob.PrivateKey
   ]
