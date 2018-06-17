@@ -13,7 +13,6 @@
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\src\BitThicket.Bitcoin.Cryptography\BitThicket.Bitcoin.Cryptography.fsproj" />
-    <ProjectReference Include="..\..\src\BitThicket.Bitcoin.Cryptography.Unsafe\BitThicket.Bitcoin.Cryptography.Unsafe.csproj" />
   </ItemGroup>
   <Import Project="..\..\.paket\Paket.Restore.targets" />
 </Project>
