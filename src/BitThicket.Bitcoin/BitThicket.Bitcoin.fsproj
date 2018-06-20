@@ -6,8 +6,13 @@
     <DebugType>portable</DebugType>
   </PropertyGroup>
   <ItemGroup>
+    <Compile Include="AssemblyInfo.fs" />
+    <Compile Include="Utility.fs" />
     <Compile Include="Address.fs" />
     <None Include="Script.fsx" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\BitThicket.Bitcoin.Cryptography\BitThicket.Bitcoin.Cryptography.fsproj" />  
   </ItemGroup>
   <Import Project="..\..\.paket\Paket.Restore.targets" />
 </Project>
