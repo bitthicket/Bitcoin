@@ -50,5 +50,4 @@ module Address =
         let raw = Array.concat [intermediate; checksum]
 
         // ???: might have to reverse the array for bigendian/littleendian conversion
-        let bytes = Base58.encode raw
-        Encoding.UTF8.GetString(bytes)
+        Base58.encode raw

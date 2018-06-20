@@ -11,7 +11,7 @@ let tests =
   testList "base58 tests" [
     testCase "encode 'hello'" <| fun _ ->
       let input = Encoding.UTF8.GetBytes("hello")
-      let expected = Encoding.UTF8.GetBytes("Cn8eVZg")
+      let expected = "Cn8eVZg"
       
       Base58.encode input
       |> Expect.sequenceEqual "encoder produced incorrect output" expected
