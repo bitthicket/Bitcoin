@@ -35,18 +35,18 @@ module Address =
 
     let format (prefix:VersionPrefix) (bytes:byte array) =
         // TODO: use Span when it becomes available
-        let _doubleHash (data:byte array) = 
+        let _doubleHash (prefixAndPayload:byte array) = 
             use sha256 = SHA256.Create()
-            sha256.ComputeHash(sha256.ComputeHash(data)).[0..3]
+            sha256.ComputeHash(sha256.ComputeHash(prefixAndPayload))
 
-        let _formatIntermediate _prefix _bytes =
+        let _formatIntermediate _prefix payload =
             Array.concat [
                 BitConverter.GetBytes(int _prefix);
-                _bytes
+                payload
             ]
 
         let intermediate = _formatIntermediate prefix bytes
-        let checksum = (_doubleHash intermediate)
+        let checksum = (_doubleHash intermediate).[0..3]
         let raw = Array.concat [intermediate; checksum]
 
         // ???: might have to reverse the array for bigendian/littleendian conversion

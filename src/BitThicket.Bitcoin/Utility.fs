@@ -3,8 +3,9 @@ namespace BitThicket.Bitcoin
 
 open System.IO
 
-module Base58 = 
+module internal Base58 = 
     open System
+    open System.Security.Cryptography
     open System.Text
 
     let private _encTable = [| '1'; '2'; '3'; '4'; '5'; '6'; '7'; '8'; '9'; 'A'; // 0-9
@@ -17,7 +18,7 @@ module Base58 =
     // this could definitely benefit from Span work
     /// expects input array to be in big-endian order (higher-order bytes precede lower-order ones 
     /// - i.e., data[0] is the MSB)
-    let internal encode (data:byte array) =
+    let encode (data:byte array) =
       let rec _encode (acc:MemoryStream) (n:bigint) =
           if n = 0I then 
             Array.foldBack (fun b (sb:StringBuilder) -> sb.Append(_encTable.[int b])) (acc.ToArray()) (StringBuilder())
@@ -29,7 +30,6 @@ module Base58 =
               _encode acc next
       
       use ms = new MemoryStream()
-      _encode ms (data |> Array.rev |> bigint)
+      _encode ms (data |> Array.rev |> bigint) 
 
-    let decode string =
-        Array.zeroCreate<byte> 0
+
