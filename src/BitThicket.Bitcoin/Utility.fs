@@ -30,6 +30,7 @@ module internal Base58 =
               _encode acc next
       
       use ms = new MemoryStream()
-      _encode ms (data |> Array.rev |> bigint) 
+      let n = data |> Array.append [|0uy|] |> Array.rev |> bigint
+      _encode ms n
 
 
