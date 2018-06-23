@@ -8,31 +8,48 @@ module Address =
 
     type VersionPrefix =
     | [<Description("Pay-to-pubkey Hash")>]
-      P2PKH = 0x00
+      P2PKH
     | [<Description("Pay-to-script Hash")>]
-      P2SH = 0x05
+      P2SH
     | [<Description("Private key")>]
-      WIF = 0x80
+      WIF
     | [<Description("Private key - compressed")>]
-      WIFCompressed = 0x80
+      WIFCompressed
     | [<Description("Testnet address")>]
-      TestnetAddress = 0x6f
+      TestnetAddress
     | [<Description("Testnet script hash")>]
-      TestnetScriptHash = 0xc4
-    | BIP38EncryptedPrivateKey = 0x0142         // TODO: need description
+      TestnetScriptHash
+    | BIP38EncryptedPrivateKey        // TODO: need description
     | [<Description("Testnet private key")>] 
-      TestnetWIF = 0xef
+      TestnetWIF
     | [<Description("Testnet private key")>]
-      TestnetWIFCompressed = 0xef
+      TestnetWIFCompressed
     | [<Description("Testnet BIP32 pubkey")>]
-      TestnetBIP32ExtendedPublicKey = 0x043587cf
+      TestnetBIP32ExtendedPublicKey
     | [<Description("Testnet BIP32 private key")>]
-      TestnetBIP32ExtendedPrivateKey = 0x04358394
+      TestnetBIP32ExtendedPrivateKey
     | [<Description("BIP32 pubkey")>]
-      BIP32ExtendedPublicKey = 0x0488b21e 
+      BIP32ExtendedPublicKey
     | [<Description("BIP32 private key")>]
-      BIP32ExtendedPrivateKey = 0x0488ade4
+      BIP32ExtendedPrivateKey
 
+    let inline private versionBytes version = 
+      match version with
+       | P2PKH -> [|0x00uy|]
+       | P2SH -> [|0x05uy|]
+       | WIF -> [|0x80uy|]
+       | WIFCompressed -> [|0x80uy|]
+       | TestnetAddress -> [|0x6Fuy|]
+       | TestnetScriptHash -> [|0xC4uy|]
+       | BIP38EncryptedPrivateKey -> [|0x01uy; 0x42uy|]
+       | TestnetWIF -> [|0xEFuy|]
+       | TestnetWIFCompressed -> [|0xEFuy|]
+       | TestnetBIP32ExtendedPublicKey -> [|0x04uy; 0x35uy; 0x87uy; 0xCFuy|]
+       | TestnetBIP32ExtendedPrivateKey -> [|0x04uy; 0x35uy; 0x83uy; 0x94uy|]
+       | BIP32ExtendedPublicKey -> [|0x04uy; 0x88uy; 0xb2uy; 0x1Euy|]
+       | BIP32ExtendedPrivateKey -> [|0x04uy; 0x88uy; 0xADuy; 0xE4uy|]
+
+    /// Expects data to be in big-endian byte order
     let format (prefix:VersionPrefix) (bytes:byte array) =
         // TODO: use Span when it becomes available
         let _doubleHash (prefixAndPayload:byte array) = 
@@ -41,7 +58,7 @@ module Address =
 
         let _formatIntermediate _prefix payload =
             Array.concat [
-                BitConverter.GetBytes(int _prefix);
+                versionBytes prefix
                 payload
             ]
 
@@ -49,5 +66,4 @@ module Address =
         let checksum = (_doubleHash intermediate).[0..3]
         let raw = Array.concat [intermediate; checksum]
 
-        // ???: might have to reverse the array for bigendian/littleendian conversion
         Base58.encode raw
