@@ -4,7 +4,9 @@ open System.Text
 open Expecto
 open Expecto.Flip
 open BitThicket.Bitcoin
+open System.Numerics
 
+//#region test1 data
 let test1_k = [|0x1euy; 0x99uy; 0x42uy; 0x3auy; 0x4euy; 0xd2uy; 0x76uy; 0x08uy; 0xa1uy; 0x5auy; 0x26uy; 0x16uy; 0xa2uy; 0xb0uy; 
                0xe9uy; 0xe5uy; 0x2cuy; 0xeduy; 0x33uy; 0x0auy; 0xc5uy; 0x30uy; 0xeduy; 0xccuy; 0x32uy; 0xc8uy; 0xffuy; 0xc6uy;
                0xa5uy; 0x26uy; 0xaeuy; 0xdduy|]
@@ -16,25 +18,89 @@ let test1_y = [|0x07uy; 0xCFuy; 0x33uy; 0xDAuy; 0x18uy; 0xBDuy; 0x73uy; 0x4Cuy; 
                0x2Euy; 0x50uy; 0x5Buy; 0xDBuy|]
 let test1_wif = "5J3mBbAH58CpQ3Y5RNJpUKPE62SQ5tfcvU2JpbnkeyhfsYB1Jcn"
 let test1_wifCompressed = "KxFC1jmwwCoACiCAWZ3eXa96mBM6tb3TYzGmf6YwgdGWZgawvrtJ"
+//#endregion
+
+//#region test2 data
+let test2_k = [|0x3Auy; 0xBAuy; 0x41uy; 0x62uy; 0xC7uy; 0x25uy; 0x1Cuy; 0x89uy; 0x12uy; 0x07uy; 0xB7uy; 0x47uy; 0x84uy; 0x05uy;
+                0x51uy; 0xA7uy; 0x19uy; 0x39uy; 0xB0uy; 0xDEuy; 0x08uy; 0x1Fuy; 0x85uy; 0xC4uy; 0xE4uy; 0x4Cuy; 0xF7uy; 0xC1uy;
+                0x3Euy; 0x41uy; 0xDAuy; 0xA6uy|]
+
+let test2_x = "41637322786646325214887832269588396900663353932545912953362782457239403430124"
+              |> bigint.Parse
+              |> (fun b -> b.ToByteArray())
+              |> Array.rev
+
+let test2_y = "16388935128781238405526710466724741593761085120864331449066658622400339362166"
+              |> bigint.Parse
+              |> (fun b -> b.ToByteArray())
+              |> Array.rev
+
+let test2_wif = "5JG9hT3beGTJuUAmCQEmNaxAuMacCTfXuw1R3FCXig23RQHMr4K"
+let test2_wifCompressed = "KyBsPXxTuVD82av65KZkrGrWi5qLMah5SdNq6uftawDbgKa2wv6S"
+//#endregion
 
 [<Tests>]
 let tests =
   testList "base58 tests" [
-    testCase "encode 'hello'" <| fun _ ->
+    testCase "encode \"hello\"" <| fun _ ->
       let input = Encoding.UTF8.GetBytes("hello")
       let expected = "Cn8eVZg"
       
       Base58.encode input
       |> Expect.sequenceEqual "encoder produced incorrect output" expected
+
+    testCase "decode \"Cn8veVZg\"" <| fun _ ->
+      let input = "Cn8eVZg"
+      let expected = Encoding.UTF8.GetBytes("hello")
+
+      let result = Base58.decode input
+      Expect.isOk "Base58 decoder failed" result
+
+      match result with
+      | Ok actual -> Expect.sequenceEqual "incorrect decoded bytes" expected actual
+      | _ -> failwith "unexpected error"
   ]
 
 [<Tests>]
 let addressTests =
   testList "address tests" [
-    testCase "test1 k => base58Check" <| fun _ ->
+    testCase "test1 k => WIF" <| fun _ ->
       let expected = test1_wif
+
+      let result = Address.encode Address.Type.WIF test1_k
+      Expect.isOk "WIF encoding failed for test1 private key" result
+
+      match result with 
+      | Ok actual -> Expect.equal "incorrect WIF-encoded result for test1 private key" expected actual
+      | _ -> failwith "unexpected error"
+    
+    testCase "test1 k => WIF-compressed" <| fun _ ->
+      let expected = test1_wifCompressed
+
+      let result = Address.encode Address.Type.WIFCompressed test1_k
+      Expect.isOk "WIF-compressed encoding failed for test1 private key" result
+
+      match result with 
+      | Ok actual -> Expect.equal "incorrect WIF-compressed-encoded result for test1 private key" expected actual
+      | _ -> failwith "unexpected error"
+
+    testCase "test2 k => WIF" <| fun _ ->
+      let expected = test2_wif
+
+      let result = Address.encode Address.Type.WIF test2_k
+      Expect.isOk "WIF encoding failed for test2 private key" result
       
-      Address.format Address.VersionPrefix.WIF test1_k
-      |> Expect.equal "WIF encoding failed for test1 private key" expected
-      
+      match result with
+      | Ok actual -> Expect.equal "incorrect WIF-encoded result for test2 private key" expected actual
+      | _ -> failwith "unexpected error"
+
+    testCase "test2 k => WIF-compressed" <| fun _ ->
+      let expected = test2_wifCompressed
+
+      let result = Address.encode Address.Type.WIFCompressed test2_k
+      Expect.isOk "WIF-compressed encoding failed for test2 private key" result
+
+      match result with
+      | Ok actual -> Expect.equal "incorrect WIF-compressed-encoded result for test2 private key" expected actual
+      | _ -> failwith "unexpected error"
   ]
