@@ -1,10 +1,8 @@
 namespace BitThicket.Bitcoin
 
 module Address =
-    open System
     open System.ComponentModel
     open System.Security.Cryptography
-    open System.Text
 
     type VersionPrefix =
     | [<Description("Pay-to-pubkey Hash")>]
@@ -54,11 +52,11 @@ module Address =
         // TODO: use Span when it becomes available
         let _doubleHash (prefixAndPayload:byte array) = 
             use sha256 = SHA256.Create()
-            sha256.ComputeHash(sha256.ComputeHash(prefixAndPayload))
+            sha256.ComputeHash(prefixAndPayload) |> sha256.ComputeHash
 
         let _formatIntermediate _prefix payload =
             Array.concat [
-                versionBytes prefix
+                int _prefix |> Bits.Converter.GetBytesBE
                 payload
             ]
 

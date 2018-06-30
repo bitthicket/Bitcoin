@@ -1,11 +1,44 @@
 namespace BitThicket.Bitcoin
 
+module internal Bits =
+  open System
 
-open System.IO
+  [<AbstractClass; Sealed>]
+  type Converter () =
+    static member GetBytesBE(value : bool) =
+      BitConverter.GetBytes(value)
+      |> if BitConverter.IsLittleEndian then Array.rev else id
+    static member GetBytesBE(value : char) =
+      BitConverter.GetBytes(value)
+      |> if BitConverter.IsLittleEndian then Array.rev else id
+    static member GetBytesBE(value : float) =
+      BitConverter.GetBytes(value)
+      |> if BitConverter.IsLittleEndian then Array.rev else id
+    static member GetBytesBE(value : int16) =
+      BitConverter.GetBytes(value)
+      |> if BitConverter.IsLittleEndian then Array.rev else id
+    static member GetBytesBE(value : int32) =
+      BitConverter.GetBytes(value)
+      |> if BitConverter.IsLittleEndian then Array.rev else id
+    static member GetBytesBE(value : int64) =
+      BitConverter.GetBytes(value)
+      |> if BitConverter.IsLittleEndian then Array.rev else id
+    static member GetBytesBE(value : float32) =
+      BitConverter.GetBytes(value)
+      |> if BitConverter.IsLittleEndian then Array.rev else id
+    static member GetBytesBE(value : uint16) =
+      BitConverter.GetBytes(value)
+      |> if BitConverter.IsLittleEndian then Array.rev else id
+    static member GetBytesBE(value : uint32) =
+      BitConverter.GetBytes(value)
+      |> if BitConverter.IsLittleEndian then Array.rev else id
+    static member GetBytesBE(value : uint64) =
+      BitConverter.GetBytes(value)
+      |> if BitConverter.IsLittleEndian then Array.rev else id
 
 module internal Base58 = 
     open System
-    open System.Security.Cryptography
+    open System.IO
     open System.Text
 
     let private _encTable = [| '1'; '2'; '3'; '4'; '5'; '6'; '7'; '8'; '9'; 'A'; // 0-9
@@ -32,5 +65,3 @@ module internal Base58 =
       use ms = new MemoryStream()
       let n = data |> Array.append [|0uy|] |> Array.rev |> bigint
       _encode ms n
-
-
