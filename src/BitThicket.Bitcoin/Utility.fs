@@ -35,11 +35,17 @@ module internal Bits =
     static member GetBytesBE(value : uint64) =
       BitConverter.GetBytes(value)
       |> if BitConverter.IsLittleEndian then Array.rev else id
+    static member GetBytesBE(value : bigint) =
+      value.ToByteArray()
+      |> if BitConverter.IsLittleEndian then Array.rev else id
 
 module internal Base58 = 
     open System
     open System.IO
     open System.Text
+
+    type Error =
+    | InvalidBase58String of string
 
     let private _encTable = [| '1'; '2'; '3'; '4'; '5'; '6'; '7'; '8'; '9'; 'A'; // 0-9
                                'B'; 'C'; 'D'; 'E'; 'F'; 'G'; 'H'; 'J'; 'K'; 'L'; // 10-19
@@ -47,6 +53,12 @@ module internal Base58 =
                                'X'; 'Y'; 'Z'; 'a'; 'b'; 'c'; 'd'; 'e'; 'f'; 'g'; // 30-39
                                'h'; 'i'; 'j'; 'k'; 'm'; 'n'; 'o'; 'p'; 'q'; 'r'; // 40-49
                                's'; 't'; 'u'; 'v'; 'w'; 'x'; 'y'; 'z' |] // 50-57
+
+    type ValidString = { value:string }
+    let validate raw =
+      if String.forall (fun c -> Array.exists (fun e -> c = e) _encTable) raw
+      then { value = raw } |> Ok
+      else InvalidBase58String raw |> Error
 
     // this could definitely benefit from Span work
     /// expects input array to be in big-endian order (higher-order bytes precede lower-order ones 
@@ -65,3 +77,15 @@ module internal Base58 =
       use ms = new MemoryStream()
       let n = data |> Array.append [|0uy|] |> Array.rev |> bigint
       _encode ms n
+
+    let decode (data:string) =
+      let rec _decode (s:string) (acc:bigint) =
+        if s.Length = 0 then Bits.Converter.GetBytesBE(acc)
+        else
+          Array.findIndex (fun c -> c = s.[0]) _encTable
+          |> (fun index -> 58I * acc + bigint index)
+          |> _decode (s.Substring(1))
+
+      match validate data with
+      | Error err -> Error err
+      | Ok validString -> _decode validString.value 0I |> Ok
