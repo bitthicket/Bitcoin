@@ -42,6 +42,7 @@ module internal Bits =
 module internal Base58 = 
     open System
     open System.IO
+    open System.Security.Cryptography
     open System.Text
 
     type Error =
@@ -77,6 +78,16 @@ module internal Base58 =
       use ms = new MemoryStream()
       let n = data |> Array.append [|0uy|] |> Array.rev |> bigint
       _encode ms n
+
+    let encodeCheckBinary (data:byte array) =
+      use sha = SHA256.Create()
+      let hash = data |> sha.ComputeHash |> sha.ComputeHash
+      let checksum = hash.[..3]
+
+      Array.concat [data; checksum] |> encode
+
+    let encodeCheck (data:string) = 
+      Encoding.UTF8.GetBytes(data) |> encodeCheckBinary
 
     let decode (data:string) =
       let rec _decode (s:string) (acc:bigint) =

@@ -4,7 +4,6 @@ open System.Text
 open Expecto
 open Expecto.Flip
 open BitThicket.Bitcoin
-open System.Numerics
 
 //#region test1 data
 let test1_k = [|0x1euy; 0x99uy; 0x42uy; 0x3auy; 0x4euy; 0xd2uy; 0x76uy; 0x08uy; 0xa1uy; 0x5auy; 0x26uy; 0x16uy; 0xa2uy; 0xb0uy; 
@@ -103,4 +102,17 @@ let addressTests =
       match result with
       | Ok actual -> Expect.equal "incorrect WIF-compressed-encoded result for test2 private key" expected actual
       | _ -> failwith "unexpected error"
+
+    testCase "validate address checksum" <| fun _ ->
+      // let testData = [|104uy; 101uy; 108uy; 108uy; 111uy; 149uy; 149uy; 201uy; 223uy; 0uy|]
+      let testB58Check = "2L5B5yqsVG8Vt"
+
+      Address.validateChecksum testB58Check
+      |> Expect.isOk "Failed to validate checksum"
+
+    testCase "fail checksum validation" <| fun _ ->
+      let testB58BadCheck = "3L5B5yqsVG8Vt"
+
+      Address.validateChecksum testB58BadCheck
+      |> Expect.isError "Unexpectedly passed checksum validation"
   ]
