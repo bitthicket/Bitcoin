@@ -5,7 +5,7 @@ module Address =
     open System.Linq
     open System.Security.Cryptography
 
-    type Type =
+    type AddressType =
     | [<Description("Pay-to-pubkey Hash")>]
       P2PKH
     | [<Description("Pay-to-script Hash")>]
@@ -18,7 +18,6 @@ module Address =
       TestnetAddress
     | [<Description("Testnet script hash")>]
       TestnetScriptHash
-    | BIP38EncryptedPrivateKey        // TODO: need description
     | [<Description("Testnet private key")>] 
       TestnetWIF
     | [<Description("Testnet private key")>]
@@ -32,27 +31,26 @@ module Address =
     | [<Description("BIP32 private key")>]
       BIP32ExtendedPrivateKey
 
-    type Error =
+    type AddressError =
     | UnsupportedAddressFormat of string
-    | InvalidAddressFormat of Type*string
+    | InvalidAddressFormat of AddressType*string
     | IncorrectChecksum of string
     | Base58Error of string
 
     let inline private versionBytes version = 
       match version with
-       | P2PKH -> [|0x00uy|]
-       | P2SH -> [|0x05uy|]
-       | WIF -> [|0x80uy|]
-       | WIFCompressed -> [|0x80uy|]
-       | TestnetAddress -> [|0x6Fuy|]
-       | TestnetScriptHash -> [|0xC4uy|]
-       | BIP38EncryptedPrivateKey -> [|0x01uy; 0x42uy|]
-       | TestnetWIF -> [|0xEFuy|]
-       | TestnetWIFCompressed -> [|0xEFuy|]
-       | TestnetBIP32ExtendedPublicKey -> [|0x04uy; 0x35uy; 0x87uy; 0xCFuy|]
-       | TestnetBIP32ExtendedPrivateKey -> [|0x04uy; 0x35uy; 0x83uy; 0x94uy|]
-       | BIP32ExtendedPublicKey -> [|0x04uy; 0x88uy; 0xb2uy; 0x1Euy|]
-       | BIP32ExtendedPrivateKey -> [|0x04uy; 0x88uy; 0xADuy; 0xE4uy|]
+       | P2PKH -> [|0x00uy|]  // 1
+       | P2SH -> [|0x05uy|]   // 3
+       | WIF -> [|0x80uy|]    // 5
+       | WIFCompressed -> [|0x80uy|]  // K or L
+       | TestnetAddress -> [|0x6Fuy|] // m or on
+       | TestnetScriptHash -> [|0xC4uy|]  // 2
+       | TestnetWIF -> [|0xEFuy|] // 9
+       | TestnetWIFCompressed -> [|0xEFuy|] // c
+       | TestnetBIP32ExtendedPublicKey -> [|0x04uy; 0x35uy; 0x87uy; 0xCFuy|]  // tpub
+       | TestnetBIP32ExtendedPrivateKey -> [|0x04uy; 0x35uy; 0x83uy; 0x94uy|] // tprv
+       | BIP32ExtendedPublicKey -> [|0x04uy; 0x88uy; 0xb2uy; 0x1Euy|] // xpub
+       | BIP32ExtendedPrivateKey -> [|0x04uy; 0x88uy; 0xADuy; 0xE4uy|]  // xprv
 
     let (|PrefixP2PKH|_|) (addr:string) =
       if addr.StartsWith("1") then Some addr else None
@@ -66,20 +64,17 @@ module Address =
     let (|PrefixTestnetAddress|_|) (addr:string) =
       if addr.[0] = 'm' || addr.[0] = 'n' then Some addr else None
 
-    let (|PrefixBIP38EncryptedPrivateKey|_|) (addr:string) =
-      if addr.StartsWith("6P") then Some addr else None
-    
     let (|PrefixBIP32ExtendedPublicKey|_|) (addr:string) =
       if addr.StartsWith("xpub") then Some addr else None
 
-    type ValidatedAddress = { addressType:Type; base58Check:string; }
+    type ValidatedAddress = { addressType:AddressType; base58Check:string; }
 
     let inline private doubleHash (prefixAndPayload:byte array) = 
       use sha256 = SHA256.Create()
       sha256.ComputeHash(prefixAndPayload) |> sha256.ComputeHash
 
     /// Expects data to be in big-endian byte order
-    let encode (prefix:Type) (bytes:byte array) =
+    let encode (prefix:AddressType) (bytes:byte array) =
         let _formatIntermediate _prefix payload =
             Array.concat [
                 _prefix |> versionBytes
@@ -106,19 +101,24 @@ module Address =
         if Enumerable.SequenceEqual((doubleHash data).[..3], check) then Ok ()
         else IncorrectChecksum addr |> Error
 
-    let private validateWif (addr:string) =
-      if addr.Length <> 52 then InvalidAddressFormat (WIF, addr) |> Error
-      else Ok ()
-
-    let private validateAddress address =
-      validateChecksum address
-      // match address with
-      // | WIF addr -> validateWif addr
-      // | WIFCompressed addr ->  Ok { addressType = }
-      // | addr -> UnsupportedAddressFormat addr |> Error
+    let validateAddress address =
+      match validateChecksum address with
+      | Error err -> Error err
+      | Ok _ -> 
+        let atype = match address with
+                    | PrefixP2PKH _ -> Some P2PKH
+                    | PrefixWIF _ -> Some WIF
+                    | PrefixWIFCompressed _ -> Some WIFCompressed
+                    | PrefixTestnetAddress _ -> Some TestnetAddress
+                    | PrefixBIP32ExtendedPublicKey _ -> Some BIP32ExtendedPublicKey
+                    | _ -> None
+        match atype with
+        | None -> UnsupportedAddressFormat address |> Error
+        | Some addrType -> { addressType = addrType; base58Check = address } |> Ok
 
     let decode base58Check =
-       
-
-      (Type.WIF, Array.zeroCreate<byte> 0)
-      |> Ok
+      match validateAddress base58Check with
+      | Error err -> Error err
+      | Ok _ ->
+        (AddressType.WIF, Array.zeroCreate<byte> 0)
+        |> Ok

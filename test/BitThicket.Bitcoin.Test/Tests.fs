@@ -1,5 +1,7 @@
 module Tests
 
+#nowarn "0025"
+
 open System.Text
 open Expecto
 open Expecto.Flip
@@ -58,6 +60,22 @@ let tests =
       match result with
       | Ok actual -> Expect.sequenceEqual "incorrect decoded bytes" expected actual
       | _ -> failwith "unexpected error"
+
+    testCase "decode base58check-encoded 'hello'" <| fun _ ->
+      let input = "12L5B5yqsf7vwb"
+      let expected = [|0x00uy; 0x68uy; 0x65uy; 0x6cuy; 0x6cuy; 0x6fuy; 0x9cuy; 0x3cuy; 0x23uy; 0x62uy|]
+
+      let result = Base58.decode input
+      Expect.isOk "failed to decode input" result
+
+      let (Ok actual) = result
+      Expect.sequenceEqual "decode result incorrect" expected actual
+
+    testCase "validate base58check checksum" <| fun _ ->
+      let testB58Check = "12L5B5yqsf7vwb" // "hello" base58check-encoded
+
+      Address.validateChecksum testB58Check
+      |> Expect.isOk "Failed to validate checksum"
   ]
 
 [<Tests>]
@@ -66,7 +84,7 @@ let addressTests =
     testCase "test1 k => WIF" <| fun _ ->
       let expected = test1_wif
 
-      let result = Address.encode Address.Type.WIF test1_k
+      let result = Address.encode Address.AddressType.WIF test1_k
       Expect.isOk "WIF encoding failed for test1 private key" result
 
       match result with 
@@ -76,7 +94,7 @@ let addressTests =
     testCase "test1 k => WIF-compressed" <| fun _ ->
       let expected = test1_wifCompressed
 
-      let result = Address.encode Address.Type.WIFCompressed test1_k
+      let result = Address.encode Address.AddressType.WIFCompressed test1_k
       Expect.isOk "WIF-compressed encoding failed for test1 private key" result
 
       match result with 
@@ -86,7 +104,7 @@ let addressTests =
     testCase "test2 k => WIF" <| fun _ ->
       let expected = test2_wif
 
-      let result = Address.encode Address.Type.WIF test2_k
+      let result = Address.encode Address.AddressType.WIF test2_k
       Expect.isOk "WIF encoding failed for test2 private key" result
       
       match result with
@@ -96,23 +114,22 @@ let addressTests =
     testCase "test2 k => WIF-compressed" <| fun _ ->
       let expected = test2_wifCompressed
 
-      let result = Address.encode Address.Type.WIFCompressed test2_k
+      let result = Address.encode Address.AddressType.WIFCompressed test2_k
       Expect.isOk "WIF-compressed encoding failed for test2 private key" result
 
       match result with
       | Ok actual -> Expect.equal "incorrect WIF-compressed-encoded result for test2 private key" expected actual
       | _ -> failwith "unexpected error"
 
-    testCase "validate address checksum" <| fun _ ->
-      // let testData = [|104uy; 101uy; 108uy; 108uy; 111uy; 149uy; 149uy; 201uy; 223uy; 0uy|]
-      let testB58Check = "2L5B5yqsVG8Vt"
-
-      Address.validateChecksum testB58Check
-      |> Expect.isOk "Failed to validate checksum"
-
     testCase "fail checksum validation" <| fun _ ->
       let testB58BadCheck = "3L5B5yqsVG8Vt"
 
       Address.validateChecksum testB58BadCheck
       |> Expect.isError "Unexpectedly passed checksum validation"
+
+    testCase "validate WIF key" <| fun _ ->
+      let testWif = "5J3mBbAH58CpQ3Y5RNJpUKPE62SQ5tfcvU2JpbnkeyhfsYB1Jcn"
+
+      Address.validateAddress testWif
+      |> Expect.isOk "Valid address failed validation"
   ]
