@@ -99,4 +99,6 @@ module internal Base58 =
 
       match validate data with
       | Error err -> Error err
-      | Ok validString -> _decode validString.value 0I |> Ok
+      | Ok validString -> _decode validString.value 0I 
+                          |> if data.[0] <> '1' then id else Array.append [|0uy|]
+                          |> Ok
