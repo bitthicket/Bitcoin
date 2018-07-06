@@ -61,6 +61,24 @@ let tests =
       | Ok actual -> Expect.sequenceEqual "incorrect decoded bytes" expected actual
       | _ -> failwith "unexpected error"
 
+    testCase "decode 5J3mBbAH58CpQ3Y5RNJpUKPE62SQ5tfcvU2JpbnkeyhfsYB1Jcn" <| fun _ ->
+      let input = "5J3mBbAH58CpQ3Y5RNJpUKPE62SQ5tfcvU2JpbnkeyhfsYB1Jcn"
+      let expected = [|// version byte
+                       0x80uy;
+                       // payload
+                       0x1euy; 0x99uy; 0x42uy; 0x3auy; 0x4euy; 0xd2uy; 0x76uy; 0x08uy;
+                       0xa1uy; 0x5auy; 0x26uy; 0x16uy; 0xa2uy; 0xb0uy; 0xe9uy; 0xe5uy; 
+                       0x2cuy; 0xeduy; 0x33uy; 0x0auy; 0xc5uy; 0x30uy; 0xeduy; 0xccuy; 
+                       0x32uy; 0xc8uy; 0xffuy; 0xc6uy; 0xa5uy; 0x26uy; 0xaeuy; 0xdduy;
+                       // checksum
+                       0xc4uy; 0x7euy; 0x83uy; 0xffuy|]
+
+      let result = Base58.decode input
+      Expect.isOk "Base58 decoder failed" result
+
+      let (Ok actual) = result
+      Expect.sequenceEqual "decode result incorrect" expected actual
+
     testCase "decode base58check-encoded 'hello'" <| fun _ ->
       let input = "12L5B5yqsf7vwb"
       let expected = [|0x00uy; 0x68uy; 0x65uy; 0x6cuy; 0x6cuy; 0x6fuy; 0x9cuy; 0x3cuy; 0x23uy; 0x62uy|]

@@ -39,6 +39,25 @@ module internal Bits =
       value.ToByteArray()
       |> if BitConverter.IsLittleEndian then Array.rev else id
 
+  /// takes a byte array in big-endian order and ensures
+  /// that the most significant bit is set to zero by prepending a 0-byte 
+  /// if the msb is 1
+  let ensureZeroMsBit (bytes:byte array) =
+    match bytes.[0] &&& 0x80uy with
+    | 0x80uy -> Array.append [|0uy|] bytes
+    | _ -> bytes
+
+  /// takes a byte array in big-endian order and ensures that the leading
+  /// byte is 0
+  let ensureZeroMsByte (bytes:byte array) =
+    if bytes.[0] = 0uy then bytes
+    else Array.append[|0uy|] bytes
+
+  /// takes a byte array in big-endian order and removes leading 0 bytes
+  let removeZeroMsBytes (bytes:byte array) =
+    let nonZeroIndex = Array.findIndex (fun b -> b > 0uy) bytes
+    bytes.[nonZeroIndex..]
+
 module internal Base58 = 
     open System
     open System.IO
@@ -100,5 +119,7 @@ module internal Base58 =
       match validate data with
       | Error err -> Error err
       | Ok validString -> _decode validString.value 0I 
-                          |> if data.[0] <> '1' then id else Array.append [|0uy|]
+                          // this is tricky because when BigInteger.ToByteArray() is called, it will insert a leading zero byte if necessary
+                          // to ensure a positive value when the array is round-tripped.
+                          |> if data.[0] = '1' then Bits.ensureZeroMsByte else Bits.removeZeroMsBytes
                           |> Ok
