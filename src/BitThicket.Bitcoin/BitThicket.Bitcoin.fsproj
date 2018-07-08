@@ -7,7 +7,9 @@
   </PropertyGroup>
   <ItemGroup>
     <Compile Include="AssemblyInfo.fs" />
-    <Compile Include="Utility.fs" />
+    <Compile Include="Util.fs" />
+    <Compile Include="Encoding.fs" />
+    <Compile Include="Key.fs" />
     <Compile Include="Address.fs" />
     <None Include="Script.fsx" />
   </ItemGroup>
