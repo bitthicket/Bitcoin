@@ -1,13 +1,22 @@
-namespace BitThicket.Bitcoin.Encoding
+namespace BitThicket.Bitcoin
+
+type Base58Error =
+    | InvalidBase58String of string
+
+type Base58CheckError =
+    | IncorrectChecksum of byte array
+
+type EncodingError =
+    | UnsupportedEncoding of string
+    | InvalidEncoding of string
+    | Base58Error of Base58Error
+    | Base58CheckError of Base58CheckError
 
 module internal Base58 = 
     open System
     open System.IO
     open System.Text
     open BitThicket.Bitcoin
-
-    type Error =
-    | InvalidBase58String of string
 
     type Base58String = Base58String of string
 
@@ -18,10 +27,12 @@ module internal Base58 =
                                'h'; 'i'; 'j'; 'k'; 'm'; 'n'; 'o'; 'p'; 'q'; 'r'; // 40-49
                                's'; 't'; 'u'; 'v'; 'w'; 'x'; 'y'; 'z' |] // 50-57
 
-    let validate raw =
+    let private _validate raw =
         if String.forall (fun c -> Array.exists (fun e -> c = e) _encTable) raw
         then Base58String raw |> Ok
         else InvalidBase58String raw |> Error
+
+    let validate raw = _validate raw |> Result.mapError Base58Error
 
     let private divrem n d =
         let rem : bigint ref = ref 0I
@@ -51,18 +62,42 @@ module internal Base58 =
              |> (fun idx -> 58I * acc + bigint idx) |> _decode (s.Substring(1))
 
     let decode (data:string) =
-        match validate data with
-        | Error err -> Error err
-        | Ok (Base58String encoding) -> 
-            // this is tricky because when BigInteger.ToByteArray() is called, it will insert a leading zero byte if necessary
-            // to ensure a positive value when the array is round-tripped.
-            _decode encoding 0I 
-            |> if data.[0] = '1' then Bits.ensureZeroMsByte else Bits.removeZeroMsBytes
-            |> Ok
+        validate data 
+        // this is tricky because when BigInteger.ToByteArray() is called, it will insert a leading zero byte if necessary
+        // to ensure a positive value when the array is round-tripped.
+        |> Result.bind (fun (Base58String encoding) -> 
+                            _decode encoding 0I 
+                            |> if data.[0] = '1' then Bits.ensureZeroMsByte else Bits.removeZeroMsBytes
+                            |> Ok)
 
 module internal Base58Check =
     open System.Linq
     open System.Security.Cryptography
+
+    type Base58CheckString = Base58CheckString of string
+
+    let inline private doubleHash (prefixAndPayload:byte array) = 
+      use sha256 = SHA256.Create()
+      sha256.ComputeHash(prefixAndPayload) |> sha256.ComputeHash
+
+    let private _validateChecksum (data:byte array) =
+        let check = data.[(data.Length-4)..]
+        let data = data.[..(data.Length-5)]
+
+        if Enumerable.SequenceEqual((doubleHash data).[..3], check) then Ok data
+        else IncorrectChecksum data |> Error
+
+    let private encodeChecked unchecked =
+        doubleHash unchecked |> (fun cs -> cs.[..3]) |> Array.append unchecked
+
+    /// Expects data to be in big-endian byte order
+    let encode payload = 
+        encodeChecked payload |> Base58.encode |> Base58CheckString
+
+    let decode encodedString =    
+        Base58.decode encodedString |> Result.bind (_validateChecksum >> Result.mapError Base58CheckError)
+
+module Encoding =
 
     type Version =
     | P2PKH
@@ -74,7 +109,6 @@ module internal Base58Check =
     | TestnetWIF
     | TestnetWIFCompressed
 
-    // Base58Check encodings
     type Encoding = 
     | BitcoinAddress of string * byte array
     | P2SHAddress of string * byte array
@@ -85,17 +119,7 @@ module internal Base58Check =
     | TestnetWIFKey of string * byte array
     | TestnetWIFCompressedKey of string * byte array
 
-    type Error =
-    | UnsupportedAddressFormat of string
-    | InvalidAddressFormat of Version*string
-    | IncorrectChecksum of byte array
-    | Base58Error of Base58.Error
-
-    let inline private doubleHash (prefixAndPayload:byte array) = 
-      use sha256 = SHA256.Create()
-      sha256.ComputeHash(prefixAndPayload) |> sha256.ComputeHash
-
-    let inline private toBytePrefix version = 
+    let inline internal toBytePrefix version = 
       match version with
        | P2PKH -> [|0x00uy|]  // 1
        | P2SH -> [|0x05uy|]   // 3
@@ -110,43 +134,33 @@ module internal Base58Check =
     //    | BIP32ExtendedPublicKey -> [|0x04uy; 0x88uy; 0xb2uy; 0x1Euy|] // xpub
     //    | BIP32ExtendedPrivateKey -> [|0x04uy; 0x88uy; 0xADuy; 0xE4uy|]  // xprv
 
-    let private _validateChecksum (data:byte array) =
-        let check = data.[(data.Length-4)..]
-        let data = data.[..(data.Length-5)]
+    let internal encodeUnchecked version payload = 
+        Array.concat [ toBytePrefix version; payload ]
 
-        if Enumerable.SequenceEqual((doubleHash data).[..3], check) then Ok ()
-        else IncorrectChecksum data |> Error
-
-    let private encodeUnchecked version payload = 
-        match version with
-        | WIF -> Array.concat [ toBytePrefix version; payload ]
-        | _ -> failwith "unsupported encoding version"
-
-    let private encodeChecked unchecked =
-        doubleHash unchecked |> (fun cs -> cs.[..3]) |> Array.append unchecked
-
-    /// Expects data to be in big-endian byte order
-    let encode version payload = 
-        encodeUnchecked version payload |> encodeChecked |> Base58.encode
-
-    let toEncoding encodedString =
-        match Base58.decode encodedString with
-        | Error err -> Base58Error err |> Error
-        | Ok data -> 
-            match _validateChecksum data with
-            | Error err -> Error err
-            | Ok _ -> 
-                match encodedString with
-                | (enc:string) when enc.[0] = '1' -> BitcoinAddress (enc,data.[1..20]) |> Ok
-                | enc when enc.[0] = '5' -> WIFKey (enc,data.[1..32]) |> Ok
-                | enc when enc.[0] = 'K' || enc.[0] = 'L' -> WIFCompressedKey (enc,data.[1..33]) |> Ok
-                | enc when enc.[0] = 'm' || enc.[0] = 'n' -> TestnetAddress (enc,data) |> Ok
-                | enc when enc.[0] = '2' -> TestnetScriptHashAddress (enc,data) |> Ok
-                | enc when enc.[0] = '9' -> TestnetWIFKey (enc,data) |> Ok
-                | enc when enc.[0] = 'c' -> TestnetWIFCompressedKey (enc,data) |> Ok
-                | _ -> UnsupportedAddressFormat encodedString |> Error
+    let inline internal toEncoding (encodedString:string) (payload:byte array) =
+        match encodedString with
+        | enc when enc.[0] = '1' -> BitcoinAddress (enc, payload.[1..20]) |> Ok
+        | enc when enc.[0] = '5' -> WIFKey (enc, payload.[1..32]) |> Ok
+        | enc when enc.[0] = 'K' || enc.[0] = 'L' -> WIFCompressedKey (enc, payload.[1..33]) |> Ok
+        | enc when enc.[0] = 'm' || enc.[0] = 'n' -> TestnetAddress (enc, payload.[1..20]) |> Ok
+        | enc when enc.[0] = '2' -> TestnetScriptHashAddress (enc, payload) |> Ok // TODO: get data length for this
+        | enc when enc.[0] = '9' -> TestnetWIFKey (enc, payload.[1..32]) |> Ok 
+        | enc when enc.[0] = 'c' -> TestnetWIFCompressedKey (enc, payload.[1..33]) |> Ok
+        | _ -> UnsupportedEncoding encodedString |> Error
 
     let decode encodedString =
-        match toEncoding encodedString with
-        | Error err -> Error err
-        | Ok encoding -> toPayload encoding |> Ok
+        Base58Check.decode encodedString |> Result.bind (toEncoding encodedString)
+
+        // match Base58Check.decode encodedString with
+        // | Error (Base58Check.Base58Error err) -> Base58Error err |> Error
+        // | Error err -> Base58CheckError err |> Error
+        // | Ok data -> 
+        //     match encodedString with
+        //         | (enc:string) when enc.[0] = '1' -> BitcoinAddress (enc,data.[1..20]) |> Ok
+        //         | enc when enc.[0] = '5' -> WIFKey (enc,data.[1..32]) |> Ok
+        //         | enc when enc.[0] = 'K' || enc.[0] = 'L' -> WIFCompressedKey (enc,data.[1..33]) |> Ok
+        //         | enc when enc.[0] = 'm' || enc.[0] = 'n' -> TestnetAddress (enc,data) |> Ok
+        //         | enc when enc.[0] = '2' -> TestnetScriptHashAddress (enc,data) |> Ok
+        //         | enc when enc.[0] = '9' -> TestnetWIFKey (enc,data) |> Ok
+        //         | enc when enc.[0] = 'c' -> TestnetWIFCompressedKey (enc,data) |> Ok
+        //         | _ -> UnsupportedAddressFormat encodedString |> Error
