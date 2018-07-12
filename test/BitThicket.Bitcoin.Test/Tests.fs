@@ -42,112 +42,118 @@ let test2_wifCompressed = "KyBsPXxTuVD82av65KZkrGrWi5qLMah5SdNq6uftawDbgKa2wv6S"
 
 [<Tests>]
 let tests =
-  testList "base58 tests" [
-    testCase "encode \"hello\"" <| fun _ ->
-      let input = Encoding.UTF8.GetBytes("hello")
-      let expected = "Cn8eVZg"
-      
-      Base58.encode input
-      |> Expect.sequenceEqual "encoder produced incorrect output" expected
+    testList "base58 tests" [
+        testCase "encode \"hello\"" <| fun _ ->
+            let input = Encoding.UTF8.GetBytes("hello")
+            let expected = "Cn8eVZg"
 
-    testCase "decode \"Cn8veVZg\"" <| fun _ ->
-      let input = "Cn8eVZg"
-      let expected = Encoding.UTF8.GetBytes("hello")
+            Base58.encode input
+            |> Expect.sequenceEqual "encoder produced incorrect output" expected
 
-      let result = Base58.decode input
-      Expect.isOk "Base58 decoder failed" result
+        testCase "decode \"Cn8veVZg\"" <| fun _ ->
+            let input = "Cn8eVZg"
+            let expected = Encoding.UTF8.GetBytes("hello")
 
-      match result with
-      | Ok actual -> Expect.sequenceEqual "incorrect decoded bytes" expected actual
-      | _ -> failwith "unexpected error"
+            let result = Base58.decode input
+            Expect.isOk "Base58 decoder failed" result
 
-    testCase "decode 5J3mBbAH58CpQ3Y5RNJpUKPE62SQ5tfcvU2JpbnkeyhfsYB1Jcn" <| fun _ ->
-      let input = "5J3mBbAH58CpQ3Y5RNJpUKPE62SQ5tfcvU2JpbnkeyhfsYB1Jcn"
-      let expected = [|// version byte
-                       0x80uy;
-                       // payload
-                       0x1euy; 0x99uy; 0x42uy; 0x3auy; 0x4euy; 0xd2uy; 0x76uy; 0x08uy;
-                       0xa1uy; 0x5auy; 0x26uy; 0x16uy; 0xa2uy; 0xb0uy; 0xe9uy; 0xe5uy; 
-                       0x2cuy; 0xeduy; 0x33uy; 0x0auy; 0xc5uy; 0x30uy; 0xeduy; 0xccuy; 
-                       0x32uy; 0xc8uy; 0xffuy; 0xc6uy; 0xa5uy; 0x26uy; 0xaeuy; 0xdduy;
-                       // checksum
-                       0xc4uy; 0x7euy; 0x83uy; 0xffuy|]
+            let (Ok actual) = result
+            Expect.sequenceEqual "incorrect decoded bytes" expected actual
 
-      let result = Base58.decode input
-      Expect.isOk "Base58 decoder failed" result
+        testCase "decode 5J3mBbAH58CpQ3Y5RNJpUKPE62SQ5tfcvU2JpbnkeyhfsYB1Jcn" <| fun _ ->
+            let input = "5J3mBbAH58CpQ3Y5RNJpUKPE62SQ5tfcvU2JpbnkeyhfsYB1Jcn"
+            let expected = [|// version byte
+                             0x80uy;
+                             // payload
+                             0x1euy; 0x99uy; 0x42uy; 0x3auy; 0x4euy; 0xd2uy; 0x76uy; 0x08uy;
+                             0xa1uy; 0x5auy; 0x26uy; 0x16uy; 0xa2uy; 0xb0uy; 0xe9uy; 0xe5uy; 
+                             0x2cuy; 0xeduy; 0x33uy; 0x0auy; 0xc5uy; 0x30uy; 0xeduy; 0xccuy; 
+                             0x32uy; 0xc8uy; 0xffuy; 0xc6uy; 0xa5uy; 0x26uy; 0xaeuy; 0xdduy;
+                             // checksum
+                             0xc4uy; 0x7euy; 0x83uy; 0xffuy|]
 
-      let (Ok actual) = result
-      Expect.sequenceEqual "decode result incorrect" expected actual
+            let result = Base58.decode input
+            Expect.isOk "Base58 decoder failed" result
 
-    testCase "decode base58check-encoded 'hello'" <| fun _ ->
-      let input = "12L5B5yqsf7vwb"
-      let expected = [|0x00uy; 0x68uy; 0x65uy; 0x6cuy; 0x6cuy; 0x6fuy; 0x9cuy; 0x3cuy; 0x23uy; 0x62uy|]
+            let (Ok actual) = result
+            Expect.sequenceEqual "decode result incorrect" expected actual
 
-      let result = Base58.decode input
-      Expect.isOk "failed to decode input" result
+        testCase "decode base58check-encoded 'hello'" <| fun _ ->
+            let input = "12L5B5yqsf7vwb"
+            let expected = [|0x00uy; 0x68uy; 0x65uy; 0x6cuy; 0x6cuy; 0x6fuy; 0x9cuy; 0x3cuy; 0x23uy; 0x62uy|]
 
-      let (Ok actual) = result
-      Expect.sequenceEqual "decode result incorrect" expected actual
+            let result = Base58.decode input
+            Expect.isOk "failed to decode input" result
 
-    testCase "validate base58check checksum" <| fun _ ->
-      let testB58Check = "12L5B5yqsf7vwb" // "hello" base58check-encoded
+            let (Ok actual) = result
+            Expect.sequenceEqual "decode result incorrect" expected actual
 
-      Address.validateChecksum testB58Check
-      |> Expect.isOk "Failed to validate checksum"
-  ]
+        testCase "validate base58check checksum" <| fun _ ->
+            let testB58Check = "12L5B5yqsf7vwb" // "hello" base58check-encoded
+            
+            Base58.decode testB58Check
+            |> Result.bind (Base58Check.validateChecksum >> (Result.mapError Base58CheckError))
+            |> Expect.isOk "Failed to validate checksum"
 
-[<Tests>]
-let addressTests =
-  testList "address tests" [
-    testCase "test1 k => WIF" <| fun _ ->
-      let expected = test1_wif
+        testCase "decode base58check string" <| fun _ ->
+            let input = "12L5B5yqsf7vwb" // "hello" base58check-encoded
 
-      let result = Address.encode Address.AddressType.WIF test1_k
-      Expect.isOk "WIF encoding failed for test1 private key" result
+            Base58Check.decode input
+            |> Expect.isOk "Failed to decode checksum"
+    ]
 
-      match result with 
-      | Ok actual -> Expect.equal "incorrect WIF-encoded result for test1 private key" expected actual
-      | _ -> failwith "unexpected error"
+// [<Tests>]
+// let addressTests =
+//   testList "address tests" [
+//     testCase "test1 k => WIF" <| fun _ ->
+//       let expected = test1_wif
+
+//       let result = Encoding.encode Address.AddressType.WIF test1_k
+//       Expect.isOk "WIF encoding failed for test1 private key" result
+
+//       match result with 
+//       | Ok actual -> Expect.equal "incorrect WIF-encoded result for test1 private key" expected actual
+//       | _ -> failwith "unexpected error"
     
-    testCase "test1 k => WIF-compressed" <| fun _ ->
-      let expected = test1_wifCompressed
+//     testCase "test1 k => WIF-compressed" <| fun _ ->
+//       let expected = test1_wifCompressed
 
-      let result = Address.encode Address.AddressType.WIFCompressed test1_k
-      Expect.isOk "WIF-compressed encoding failed for test1 private key" result
+//       let result = Encoding.encode Address.AddressType.WIFCompressed test1_k
+//       Expect.isOk "WIF-compressed encoding failed for test1 private key" result
 
-      match result with 
-      | Ok actual -> Expect.equal "incorrect WIF-compressed-encoded result for test1 private key" expected actual
-      | _ -> failwith "unexpected error"
+//       match result with 
+//       | Ok actual -> Expect.equal "incorrect WIF-compressed-encoded result for test1 private key" expected actual
+//       | _ -> failwith "unexpected error"
 
-    testCase "test2 k => WIF" <| fun _ ->
-      let expected = test2_wif
+//     testCase "test2 k => WIF" <| fun _ ->
+//       let expected = test2_wif
 
-      let result = Address.encode Address.AddressType.WIF test2_k
-      Expect.isOk "WIF encoding failed for test2 private key" result
+//       let result = Encoding.encode Address.AddressType.WIF test2_k
+//       Expect.isOk "WIF encoding failed for test2 private key" result
       
-      match result with
-      | Ok actual -> Expect.equal "incorrect WIF-encoded result for test2 private key" expected actual
-      | _ -> failwith "unexpected error"
+//       match result with
+//       | Ok actual -> Expect.equal "incorrect WIF-encoded result for test2 private key" expected actual
+//       | _ -> failwith "unexpected error"
 
-    testCase "test2 k => WIF-compressed" <| fun _ ->
-      let expected = test2_wifCompressed
+//     testCase "test2 k => WIF-compressed" <| fun _ ->
+//       let expected = test2_wifCompressed
 
-      let result = Address.encode Address.AddressType.WIFCompressed test2_k
-      Expect.isOk "WIF-compressed encoding failed for test2 private key" result
+//       let result = Encoding.encode Address.AddressType.WIFCompressed test2_k
+//       Expect.isOk "WIF-compressed encoding failed for test2 private key" result
 
-      match result with
-      | Ok actual -> Expect.equal "incorrect WIF-compressed-encoded result for test2 private key" expected actual
-      | _ -> failwith "unexpected error"
+//       match result with
+//       | Ok actual -> Expect.equal "incorrect WIF-compressed-encoded result for test2 private key" expected actual
+//       | _ -> failwith "unexpected error"
 
-    testCase "fail checksum validation" <| fun _ ->
-      let testB58BadCheck = "3L5B5yqsVG8Vt"
+//     testCase "fail checksum validation" <| fun _ ->
+//       let testB58BadCheck = "3L5B5yqsVG8Vt"
 
-      Address.validateChecksum testB58BadCheck
-      |> Expect.isError "Unexpectedly passed checksum validation"
+//       Encoding.validateChecksum testB58BadCheck
+//       |> Expect.isError "Unexpectedly passed checksum validation"
 
-    testCase "validate WIF key" <| fun _ ->
-      let testWif = "5J3mBbAH58CpQ3Y5RNJpUKPE62SQ5tfcvU2JpbnkeyhfsYB1Jcn"
+//     testCase "validate WIF key" <| fun _ ->
+//       let testWif = "5J3mBbAH58CpQ3Y5RNJpUKPE62SQ5tfcvU2JpbnkeyhfsYB1Jcn"
 
-      Address.validateAddress testWif
-      |> Expect.isOk "Valid address failed validation"
-  ]
+//       Encoding.validateAddress testWif
+//       |> Expect.isOk "Valid address failed validation"
+//   ]

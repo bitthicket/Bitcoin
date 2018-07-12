@@ -80,11 +80,11 @@ module internal Base58Check =
       use sha256 = SHA256.Create()
       sha256.ComputeHash(prefixAndPayload) |> sha256.ComputeHash
 
-    let private _validateChecksum (data:byte array) =
+    let internal validateChecksum (data:byte array) =
+        let payload = data.[..(data.Length-5)]
         let check = data.[(data.Length-4)..]
-        let data = data.[..(data.Length-5)]
 
-        if Enumerable.SequenceEqual((doubleHash data).[..3], check) then Ok data
+        if Enumerable.SequenceEqual((doubleHash payload).[..3], check) then Ok data
         else IncorrectChecksum data |> Error
 
     let private encodeChecked unchecked =
@@ -95,7 +95,7 @@ module internal Base58Check =
         encodeChecked payload |> Base58.encode |> Base58CheckString
 
     let decode encodedString =    
-        Base58.decode encodedString |> Result.bind (_validateChecksum >> Result.mapError Base58CheckError)
+        Base58.decode encodedString |> Result.bind (validateChecksum >> Result.mapError Base58CheckError)
 
 module Encoding =
 
