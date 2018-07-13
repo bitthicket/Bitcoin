@@ -99,7 +99,7 @@ module internal Base58Check =
 
 module Encoding =
 
-    type Version =
+    type internal Version =
     | P2PKH
     | P2SH
     | WIF
@@ -110,25 +110,26 @@ module Encoding =
     | TestnetWIFCompressed
 
     type Encoding = 
-    | BitcoinAddress of string * byte array
-    | P2SHAddress of string * byte array
-    | WIFKey of string * byte array
-    | WIFCompressedKey of string * byte array
-    | TestnetAddress of string * byte array
-    | TestnetScriptHashAddress of string * byte array
-    | TestnetWIFKey of string * byte array
-    | TestnetWIFCompressedKey of string * byte array
+        internal
+        | BitcoinAddress of string * byte array
+        | P2SHAddress of string * byte array
+        | WIFKey of string * byte array
+        | WIFCompressedKey of string * byte array
+        | TestnetAddress of string * byte array
+        | TestnetScriptHashAddress of string * byte array
+        | TestnetWIFKey of string * byte array
+        | TestnetWIFCompressedKey of string * byte array
 
     let inline internal toBytePrefix version = 
-      match version with
-       | P2PKH -> [|0x00uy|]  // 1
-       | P2SH -> [|0x05uy|]   // 3
-       | WIF -> [|0x80uy|]    // 5
-       | WIFCompressed -> [|0x80uy|]  // K or L
-       | Testnet -> [|0x6Fuy|] // m or on
-       | TestnetScriptHash -> [|0xC4uy|]  // 2
-       | TestnetWIF -> [|0xEFuy|] // 9
-       | TestnetWIFCompressed -> [|0xEFuy|] // c
+        match version with
+        | P2PKH -> [|0x00uy|]  // 1
+        | P2SH -> [|0x05uy|]   // 3
+        | WIF -> [|0x80uy|]    // 5
+        | WIFCompressed -> [|0x80uy|]  // K or L
+        | Testnet -> [|0x6Fuy|] // m or on
+        | TestnetScriptHash -> [|0xC4uy|]  // 2
+        | TestnetWIF -> [|0xEFuy|] // 9
+        | TestnetWIFCompressed -> [|0xEFuy|] // c
     //    | TestnetBIP32ExtendedPublicKey -> [|0x04uy; 0x35uy; 0x87uy; 0xCFuy|]  // tpub
     //    | TestnetBIP32ExtendedPrivateKey -> [|0x04uy; 0x35uy; 0x83uy; 0x94uy|] // tprv
     //    | BIP32ExtendedPublicKey -> [|0x04uy; 0x88uy; 0xb2uy; 0x1Euy|] // xpub
@@ -147,6 +148,15 @@ module Encoding =
         | enc when enc.[0] = '9' -> TestnetWIFKey (enc, payload.[1..32]) |> Ok 
         | enc when enc.[0] = 'c' -> TestnetWIFCompressedKey (enc, payload.[1..33]) |> Ok
         | _ -> UnsupportedEncoding encodedString |> Error
+
+    let (|BitcoinAddress|_|) =  Some ()
+    let (|P2SHAddress|_|) = Some ()
+    let (|WIFKey|_|) = Some ()
+    let (|WIFCompressedKey|_|) = Some ()
+    let (|TestnetAddress|_|) = Some ()
+    let (|TestnetScriptHashAddress|_|) = Some ()
+    let (|TestnetWIFKey|_|) = Some ()
+    let (|TestnetWIFCompressedKey|_|) = Some ()
 
     let decode encodedString =
         Base58Check.decode encodedString |> Result.bind (toEncoding encodedString)
