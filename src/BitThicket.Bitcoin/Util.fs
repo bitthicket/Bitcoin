@@ -1,10 +1,9 @@
+namespace BitThicket.Bitcoin
 
-open System
-open System.IO
-open System.Security.Cryptography
-open System.Text
+module internal Bits =
+  open System
 
-[<AbstractClass; Sealed>]
+  [<AbstractClass; Sealed>]
   type Converter () =
     static member GetBytesBE(value : bool) =
       BitConverter.GetBytes(value)
@@ -40,31 +39,21 @@ open System.Text
       value.ToByteArray()
       |> if BitConverter.IsLittleEndian then Array.rev else id
 
-let _encTable = [| '1'; '2'; '3'; '4'; '5'; '6'; '7'; '8'; '9'; 'A'; // 0-9
-                   'B'; 'C'; 'D'; 'E'; 'F'; 'G'; 'H'; 'J'; 'K'; 'L'; // 10-19
-                   'M'; 'N'; 'P'; 'Q'; 'R'; 'S'; 'T'; 'U'; 'V'; 'W'; // 20-29
-                   'X'; 'Y'; 'Z'; 'a'; 'b'; 'c'; 'd'; 'e'; 'f'; 'g'; // 30-39
-                   'h'; 'i'; 'j'; 'k'; 'm'; 'n'; 'o'; 'p'; 'q'; 'r'; // 40-49
-                   's'; 't'; 'u'; 'v'; 'w'; 'x'; 'y'; 'z' |]
+  /// takes a byte array in big-endian order and ensures
+  /// that the most significant bit is set to zero by prepending a 0-byte 
+  /// if the msb is 1
+  let ensureZeroMsBit (bytes:byte array) =
+    match bytes.[0] &&& 0x80uy with
+    | 0x80uy -> Array.append [|0uy|] bytes
+    | _ -> bytes
 
-let encode (data:byte array) =
-    let rec _encode (acc:MemoryStream) (n:bigint) =
-        if n = 0I then 
-            Array.foldBack (fun b (sb:StringBuilder) -> sb.Append(_encTable.[int b])) (acc.ToArray()) (StringBuilder())
-            |> (fun sb -> sb.ToString())
-        else
-            let rem : bigint ref = ref 0I
-            let next = bigint.DivRem(n, 58I, rem)
-            acc.WriteByte(!rem |> byte)
-            _encode acc next
+  /// takes a byte array in big-endian order and ensures that the leading
+  /// byte is 0
+  let ensureZeroMsByte (bytes:byte array) =
+    if bytes.[0] = 0uy then bytes
+    else Array.append[|0uy|] bytes
 
-    use ms = new MemoryStream()
-    let n = data |> Array.append [|0uy|] |> Array.rev |> bigint
-    _encode ms n
-
-let encodeCheckBinary (data:byte array) =
-      use sha = SHA256.Create()
-      let hash = data |> sha.ComputeHash |> sha.ComputeHash
-      let checksum = hash.[..3]
-
-      Array.concat [data; checksum] |> encode
+  /// takes a byte array in big-endian order and removes leading 0 bytes
+  let removeZeroMsBytes (bytes:byte array) =
+    let nonZeroIndex = Array.findIndex (fun b -> b > 0uy) bytes
+    bytes.[nonZeroIndex..]

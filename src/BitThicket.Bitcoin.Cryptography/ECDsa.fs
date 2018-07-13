@@ -5,6 +5,9 @@ module ECDsa =
     open System.Security.Cryptography
     open System.Text
 
+    let BCRYPT_ECDSA_PRIVATE_P256_MAGIC =   0x32534345
+    let BCRYPT_ECDSA_PUBLIC_P256_MAGIC =    0x31534345
+
     type PublicBlob256 = 
         { magic : int;
           keysize : int;
@@ -27,18 +30,18 @@ module ECDsa =
         cng.Key
 
     let inline bytesToPublicEccBlob (bytes:byte[]) =
-        { magic = Ecc.BCRYPT_ECDSA_PUBLIC_P256_MAGIC;
+        { magic = BCRYPT_ECDSA_PUBLIC_P256_MAGIC;
           keysize = 256;
           cngData = bytes } |> Ok
 
     let inline bytesToPrivateEccBlob (bytes:byte[]) =
-        { magic = Ecc.BCRYPT_ECDSA_PRIVATE_P256_MAGIC;
+        { magic = BCRYPT_ECDSA_PRIVATE_P256_MAGIC;
           keysize = 256;
           cngData = bytes } |> Ok
 
     /// params k, x, and y correspond to CngKeyBlobFormat.EccPrivateBlob params d, x, and y respectively
     let cngKeyFromParams k x y =
-        let blob = Array.concat [BitConverter.GetBytes(Ecc.BCRYPT_ECDSA_PRIVATE_P256_MAGIC); 
+        let blob = Array.concat [BitConverter.GetBytes(BCRYPT_ECDSA_PRIVATE_P256_MAGIC); 
                                  BitConverter.GetBytes(256); x; y; k]
         CngKey.Import(blob, CngKeyBlobFormat.EccPrivateBlob)
 
