@@ -3,10 +3,13 @@ source https://ci.appveyor.com/nuget/fsgit-fsharp
 source https://dotnet.myget.org/F/dotnet-core/api/v3/index.json
 
 framework: >= netstandard2.0
+nuget Argu
 nuget Expecto
 nuget FAKE
 nuget FSharp.Core
 nuget System.Security.Cryptography.Cng
+
+github bitthicket/logary src/Logary.Facade/Facade.fs
 
 group Build
 source https://api.nuget.org/v3/index.json
