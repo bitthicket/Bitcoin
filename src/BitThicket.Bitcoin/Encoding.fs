@@ -20,6 +20,8 @@ module internal Base58 =
 
     type Base58String = Base58String of string
 
+    let private _58I = 58I
+
     let private _encTable = [| '1'; '2'; '3'; '4'; '5'; '6'; '7'; '8'; '9'; 'A'; // 0-9
                                'B'; 'C'; 'D'; 'E'; 'F'; 'G'; 'H'; 'J'; 'K'; 'L'; // 10-19
                                'M'; 'N'; 'P'; 'Q'; 'R'; 'S'; 'T'; 'U'; 'V'; 'W'; // 20-29
@@ -27,8 +29,15 @@ module internal Base58 =
                                'h'; 'i'; 'j'; 'k'; 'm'; 'n'; 'o'; 'p'; 'q'; 'r'; // 40-49
                                's'; 't'; 'u'; 'v'; 'w'; 'x'; 'y'; 'z' |] // 50-57
 
+    let private _decTable = ['1',0I; '2',1I; '3',2I; '4',3I; '5',4I; '6',5I; '7',6I; '8',7I; '9',8I; 'A',9I;
+                             'B',10I; 'C',11I; 'D',12I; 'E',13I; 'F',14I; 'G',15I; 'H',16I; 'J',17I; 'K',18I; 'L',19I;
+                             'M',20I; 'N',21I; 'P',22I; 'Q',23I; 'R',24I; 'S',25I; 'T',26I; 'U',27I; 'V',28I; 'W',29I;
+                             'X',30I; 'Y',31I; 'Z',32I; 'a',33I; 'b',34I; 'c',35I; 'd',36I; 'e',37I; 'f',38I; 'g',39I;
+                             'h',40I; 'i',41I; 'j',42I; 'k',43I; 'm',44I; 'n',45I; 'o',46I; 'p',47I; 'q',48I; 'r',49I;
+                             's',50I; 't',51I; 't',52I; 'u',53I; 'v',54I; 'w',55I; 'x',56I; 'y',57I; 'z',58I] |> Map.ofList
+
     let private _validate raw =
-        if String.forall (fun c -> Array.exists (fun e -> c = e) _encTable) raw
+        if String.forall (fun c -> Map.containsKey c _decTable) raw
         then Base58String raw |> Ok
         else InvalidBase58String raw |> Error
 
@@ -58,8 +67,9 @@ module internal Base58 =
 
     let rec private _decode (s:string) (acc:bigint) =
         if s.Length = 0 then Bits.Converter.GetBytesBE(acc)
-        else Array.findIndex (fun c -> c = s.[0]) _encTable 
-             |> (fun idx -> 58I * acc + bigint idx) |> _decode (s.Substring(1))
+        else _decTable.[s.[0]]
+             |> (fun idx -> _58I * acc + idx)
+             |> _decode (s.Substring(1))
 
     let decode (data:string) =
         validate data 

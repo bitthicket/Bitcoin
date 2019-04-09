@@ -1,0 +1,11 @@
+{
+  "profiles": {
+    "BitThicket.Bitcoin.Test": {
+      "commandName": "Project"
+    },
+    "Profiling": {
+      "commandName": "Project",
+      "commandLineArgs": "--stress 1.0"
+    }
+  }
+}

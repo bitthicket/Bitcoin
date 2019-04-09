@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 15
-VisualStudioVersion = 15.0.27703.2026
+VisualStudioVersion = 15.0.28307.489
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{7F264EF7-0EA1-482C-989F-61882410FE60}"
 EndProject
@@ -13,11 +13,30 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "test", "test", "{3BE2CB68-5
 EndProject
 Project("{6EC3EE1D-3C4E-46DD-8F32-0CC8E7565705}") = "BitThicket.Bitcoin.Cryptography.Test", "test\BitThicket.Bitcoin.Cryptography.Test\BitThicket.Bitcoin.Cryptography.Test.fsproj", "{2E162A71-D4DA-4787-BEB6-4DC54D3AA14F}"
 EndProject
-Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "BitThicket.Bitcoin.Test", "test\BitThicket.Bitcoin.Test\BitThicket.Bitcoin.Test.fsproj", "{21B7C159-053F-4683-936E-57AAAD5C212A}"
+Project("{6EC3EE1D-3C4E-46DD-8F32-0CC8E7565705}") = "BitThicket.Bitcoin.Test", "test\BitThicket.Bitcoin.Test\BitThicket.Bitcoin.Test.fsproj", "{21B7C159-053F-4683-936E-57AAAD5C212A}"
 EndProject
-Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "BitThicket.Bitcoin.TestNode", "src\BitThicket.Bitcoin.TestNode\BitThicket.Bitcoin.TestNode.fsproj", "{709A4689-C025-4FE7-859A-D62B508BFDC1}"
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{6244C7CF-ED33-4A74-8852-13A4FA3F53AC}"
+	ProjectSection(SolutionItems) = preProject
+		build.cmd = build.cmd
+		build.fsx = build.fsx
+		paket.dependencies = paket.dependencies
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Performance", "Performance", "{2867806B-2C67-426C-A89C-0A58322EB74F}"
+	ProjectSection(SolutionItems) = preProject
+		Performance\Report190407(1).app.etl = Performance\Report190407(1).app.etl
+		Performance\Report190407(1).vsp = Performance\Report190407(1).vsp
+		Performance\Report190407(2).app.etl = Performance\Report190407(2).app.etl
+		Performance\Report190407(2).vsp = Performance\Report190407(2).vsp
+		Performance\Report190407.app.etl = Performance\Report190407.app.etl
+		Performance\Report190407.vsp = Performance\Report190407.vsp
+		Performance\Report20190407-1635.diagsession = Performance\Report20190407-1635.diagsession
+	EndProjectSection
 EndProject
 Global
+	GlobalSection(Performance) = preSolution
+		HasPerformanceSessions = true
+	EndGlobalSection
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
 		Debug|x64 = Debug|x64
@@ -75,18 +94,6 @@ Global
 		{21B7C159-053F-4683-936E-57AAAD5C212A}.Release|x64.Build.0 = Release|Any CPU
 		{21B7C159-053F-4683-936E-57AAAD5C212A}.Release|x86.ActiveCfg = Release|Any CPU
 		{21B7C159-053F-4683-936E-57AAAD5C212A}.Release|x86.Build.0 = Release|Any CPU
-		{709A4689-C025-4FE7-859A-D62B508BFDC1}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{709A4689-C025-4FE7-859A-D62B508BFDC1}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{709A4689-C025-4FE7-859A-D62B508BFDC1}.Debug|x64.ActiveCfg = Debug|Any CPU
-		{709A4689-C025-4FE7-859A-D62B508BFDC1}.Debug|x64.Build.0 = Debug|Any CPU
-		{709A4689-C025-4FE7-859A-D62B508BFDC1}.Debug|x86.ActiveCfg = Debug|Any CPU
-		{709A4689-C025-4FE7-859A-D62B508BFDC1}.Debug|x86.Build.0 = Debug|Any CPU
-		{709A4689-C025-4FE7-859A-D62B508BFDC1}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{709A4689-C025-4FE7-859A-D62B508BFDC1}.Release|Any CPU.Build.0 = Release|Any CPU
-		{709A4689-C025-4FE7-859A-D62B508BFDC1}.Release|x64.ActiveCfg = Release|Any CPU
-		{709A4689-C025-4FE7-859A-D62B508BFDC1}.Release|x64.Build.0 = Release|Any CPU
-		{709A4689-C025-4FE7-859A-D62B508BFDC1}.Release|x86.ActiveCfg = Release|Any CPU
-		{709A4689-C025-4FE7-859A-D62B508BFDC1}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -96,9 +103,26 @@ Global
 		{3E54D486-4038-4A65-A570-FABF76CBE768} = {7F264EF7-0EA1-482C-989F-61882410FE60}
 		{2E162A71-D4DA-4787-BEB6-4DC54D3AA14F} = {3BE2CB68-5E3C-40EC-AFE6-47AA181EF3BC}
 		{21B7C159-053F-4683-936E-57AAAD5C212A} = {3BE2CB68-5E3C-40EC-AFE6-47AA181EF3BC}
-		{709A4689-C025-4FE7-859A-D62B508BFDC1} = {7F264EF7-0EA1-482C-989F-61882410FE60}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {47456941-DAE3-4ED0-8D53-55C7A34F1364}
+	EndGlobalSection
+	GlobalSection(Performance) = preSolution
+		HasPerformanceSessions = true
+	EndGlobalSection
+	GlobalSection(Performance) = preSolution
+		HasPerformanceSessions = true
+	EndGlobalSection
+	GlobalSection(Performance) = preSolution
+		HasPerformanceSessions = true
+	EndGlobalSection
+	GlobalSection(Performance) = preSolution
+		HasPerformanceSessions = true
+	EndGlobalSection
+	GlobalSection(Performance) = preSolution
+		HasPerformanceSessions = true
+	EndGlobalSection
+	GlobalSection(Performance) = preSolution
+		HasPerformanceSessions = true
 	EndGlobalSection
 EndGlobal
