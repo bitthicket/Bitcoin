@@ -2,6 +2,9 @@ namespace BitThicket.Bitcoin
 
 module Encoding =
 
+    open Base58
+    open Base58Check
+
     type internal Version =
     | P2PKH
     | P2SH

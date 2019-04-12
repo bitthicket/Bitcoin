@@ -1,21 +1,21 @@
 namespace BitThicket.Bitcoin
 
-module internal Base58 =
+type Base58Error =
+    | InvalidBase58String of string
+
+type Base58CheckError =
+    | IncorrectChecksum of byte array
+
+type EncodingError =
+    | UnsupportedEncoding of string
+    | InvalidEncoding of string
+    | Base58Error of Base58Error
+    | Base58CheckError of Base58CheckError
+
+module Base58 =
     open System
     open System.IO
     open System.Text
-
-    type Base58Error =
-        | InvalidBase58String of string
-
-    type Base58CheckError =
-        | IncorrectChecksum of byte array
-
-    type EncodingError =
-        | UnsupportedEncoding of string
-        | InvalidEncoding of string
-        | Base58Error of Base58Error
-        | Base58CheckError of Base58CheckErrortype
 
     type Base58String = Base58String of string
 
@@ -79,7 +79,7 @@ module internal Base58 =
                             |> if data.[0] = '1' then Bits.ensureZeroMsByte else Bits.removeZeroMsBytes
                             |> Ok)
 
-module internal Base58Check =
+module Base58Check =
     open System.Linq
     open System.Security.Cryptography
 
