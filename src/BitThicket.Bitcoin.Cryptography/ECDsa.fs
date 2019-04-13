@@ -11,14 +11,14 @@ module ECDsa =
     type PublicBlob256 = 
         { magic : int;
           keysize : int;
-          cngData : byte array;}
+          cngData : byte array }
 
         member this.Key =  this.cngData.[8..]
 
     type PrivateBlob256 =
         { magic : int;
           keysize : int;
-          cngData : byte array;}
+          cngData : byte array }
         
         member this.PublicKey = this.cngData.[8..71]
         member this.PrivateKey = this.cngData.[72..]

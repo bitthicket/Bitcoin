@@ -6,14 +6,14 @@ module Encoding =
     open Base58Check
 
     type internal Version =
-    | P2PKH
-    | P2SH
-    | WIF
-    | WIFCompressed
-    | Testnet
-    | TestnetScriptHash
-    | TestnetWIF
-    | TestnetWIFCompressed
+        | P2PKH
+        | P2SH
+        | WIF
+        | WIFCompressed
+        | Testnet
+        | TestnetScriptHash
+        | TestnetWIF
+        | TestnetWIFCompressed
 
     type Encoding = 
         internal

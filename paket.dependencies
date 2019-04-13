@@ -3,11 +3,12 @@ source https://ci.appveyor.com/nuget/fsgit-fsharp
 source https://dotnet.myget.org/F/dotnet-core/api/v3/index.json
 
 framework: >= netstandard2.0
-nuget CommandLineParser.FSharp
+nuget Argu
 nuget Expecto
-nuget Expecto.visualStudio.TestAdapter
+nuget Expecto.VisualStudio.TestAdapter
 nuget FAKE
 nuget FSharp.Core
+nuget Logary >= 5.0.0 prerelease
 nuget System.Security.Cryptography.Cng
 
 github bitthicket/logary src/Logary.Facade/Facade.fs
