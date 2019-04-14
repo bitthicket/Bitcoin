@@ -1,4 +1,5 @@
 module BitThicket.Bitcoin.Daemon.Configuration
+open System
 open System.Net
 open Argu
 open Hopac
@@ -10,7 +11,7 @@ open Logary.Targets
 type BitcoinNetwork = | Mainnet | Testnet
 
 type Arguments =
-    | Network of BitcoinNetwork
+    | [<Mandatory>] Network of BitcoinNetwork
     | Log_Level of LogLevel
 with 
     interface IArgParserTemplate with
@@ -19,41 +20,48 @@ with
             | Network _ -> "Specify which blockchain to use"
             | Log_Level _ -> "Set log level"
 
-type ConfigurationMessage = 
-    | SetArgs of string array
-    | GetSetting of string
-    | GetLogger of string
+let private defaultLogLevel = Info
 
-type Settings() =
-    static let logary = 
-        Config.create "BitThicket.Bitcoin.Daemon" (Dns.GetHostName())
-        |> Config.target (LiterateConsole.create LiterateConsole.empty "console")
-        |> Config.ilogger (ILogger.Console Debug)
-        |> Config.build
-        |> run
-    
-    static let log = logary.getLogger "Configuration.Agent"
+let private buildLogary() = 
+    Config.create "BitThicket.Bitcoin.Daemon" (Dns.GetHostName())
+    |> Config.target (LiterateConsole.create LiterateConsole.empty "console")
+    |> Config.ilogger (ILogger.Console Info)
+    |> Config.build
+    |> run
 
-    static let mutable parsedArgs : ParseResults<Arguments> option = None
+let mutable private logary = buildLogary()
 
-    static let parser = ArgumentParser.Create<Arguments>(programName = "BitcoinDaemon")
+let private log = logary.getLogger "Configuration.Agent"
+let mutable private parsedArgs : ParseResults<Arguments> option = None
 
-    static let agent = MailboxProcessor.Start(fun inbox ->
-        let rec messageLoop() = async {
-            let! msg = inbox.Receive()
-            
-            match msg with
-            | SetArgs args -> 
-                match parsedArgs with
-                | Some _ -> 
-                    log.error (eventX "Attempt to set args after initialization")
-                | None -> 
-                    parsedArgs <- parser.Parse args |> Some
-            | GetSetting setting -> 
-                log.debug (eventX (sprintf "requested settting: %s" setting))
-            | GetLogger name -> 
-                log.debug (eventX (sprintf "request for logger '%s'" name))
+let errorHandler = ProcessExiter(colorizer = function 
+    | ErrorCode.HelpText -> None 
+    | _ -> Some ConsoleColor.Red)
 
-            return! messageLoop()
-        }
-        messageLoop() )
+let private parser = ArgumentParser.Create<Arguments>(programName = "BitcoinDaemon", errorHandler = errorHandler)
+
+let setArgs args =
+    match parsedArgs with
+    | Some _ -> 
+        log.error (eventX "Attempt to set args after initialization")
+        Result.Error()
+    | None ->
+        let pa = parser.Parse args
+        let logLevel = pa.GetResult(Log_Level, Info)
+        
+        if (logLevel <> defaultLogLevel) then 
+            logary.shutdown() |> ignore
+            logary <- buildLogary()
+
+        parsedArgs <- pa |> Some
+        Result.Ok()
+
+let getArgs() = 
+    match parsedArgs with
+    | Some args -> Result.Ok args
+    | None ->
+        log.error (eventX ("Attempt to retrieve args before initialization"))
+        Result.Error()
+
+let getLogger (name:string) =
+    logary.getLogger name
