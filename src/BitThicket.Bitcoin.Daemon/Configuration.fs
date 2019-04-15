@@ -8,7 +8,7 @@ open Logary.Configuration
 open Logary.Message
 open Logary.Targets
 
-type BitcoinNetwork = | Mainnet | Testnet
+type BitcoinNetwork = | Mainnet | Testnet | Regtest
 
 type Arguments =
     | [<Mandatory>] Network of BitcoinNetwork
