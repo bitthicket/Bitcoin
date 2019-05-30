@@ -1,4 +1,4 @@
-module BitThicket.Bitcoin.Daemon.Configuration
+module BitThicket.Bitcoin.Daemon.Cfg
 open System
 open System.Net
 open Argu
@@ -13,12 +13,14 @@ type BitcoinNetwork = | Mainnet | Testnet | Regtest
 type Arguments =
     | [<Mandatory>] Network of BitcoinNetwork
     | Log_Level of LogLevel
+    | MaxPeers of uint8
 with 
     interface IArgParserTemplate with
         member s.Usage =
             match s with
             | Network _ -> "Specify which blockchain to use"
             | Log_Level _ -> "Set log level"
+            | MaxPeers _ -> "Node will connect to no more peers than this"
 
 let private defaultLogLevel = Info
 
@@ -65,3 +67,11 @@ let getArgs() =
 
 let getLogger (name:string) =
     logary.getLogger name
+
+let getNetwork () = 
+    let pa = Option.get parsedArgs
+    pa.GetResult Network
+
+let getMaxPeers () =
+    let pa = Option.get parsedArgs
+    pa.GetResult (MaxPeers, defaultValue = uint8 8)

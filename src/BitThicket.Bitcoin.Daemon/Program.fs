@@ -5,7 +5,7 @@ open Logary
 open Logary.Message
 open System.Net
 
-open BitThicket.Bitcoin.Daemon.Configuration
+open BitThicket.Bitcoin.Daemon.Cfg
 
 
 [<EntryPoint>]
@@ -16,7 +16,9 @@ let main argv =
     let log = getLogger "main"
 
     match setArgs argv with
-    | Ok _ -> log.info (eventX "Initializing Bitcoin Daemon")
+    | Ok _ -> 
+        let initStr = getNetwork() |> sprintf "Initializingi Bitcoin Daemon (%A)"
+        log.info (eventX initStr)
     | Result.Error _ -> 
         log.error (eventX "Failed to initialize Bitcoin Daemon")
         failwith "unexpected failure in initialization"
