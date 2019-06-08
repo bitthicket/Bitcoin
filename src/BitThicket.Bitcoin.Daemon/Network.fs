@@ -4,6 +4,7 @@ open System.Collections.Generic
 open System.Net
 open System.Net.Sockets
 open Hopac
+open Hopac.Infixes
 open Logary
 open Logary.Message
 
@@ -50,55 +51,23 @@ module private Socket =
                 econt exn
         ) |> Alt.fromAsync
 
+module private Dns =
+    let lookup (hostname:string) = job {
+        return! Dns.GetHostEntryAsync(hostname)
+    }
+
+    let spreadAddr (entry:IPHostEntry) = 
+        seq entry.AddressList
+
 module private Peers =
     let _log = Cfg.getLogger "Network.PeerLookup"
 
     type PeerDescriptor =
         { address : string }
 
-    let private mainDnsSeeds = 
-        [| "dnsseed.bluematt.me";
-           "seed.bitcoin.sipa.be";
-           "dnsseed.bitcoin.dashjr.org";
-           "seed.bitcoinstats.com";
-           "seed.bitcoin.jonasschnelli.ch";
-           "seed.btc.petertodd.org" |]
-
-    let private testDnsSeeds = 
-        [| "seed.tbtc.petertodd.org" |]
-
-    let shuffle arr =
-        let rand = new Random(int DateTime.Now.Ticks)
-        Array.sortBy (fun _ -> rand.Next()) arr
-
-    let peerDirectoryJob = job {
-        let peers = HashSet<PeerDescriptor>()
-
-        // wait on requests for peers
-        ()
-    }
-
-    let private findPeersJob = job {
-        let dnsSeeds = match Cfg.getNetwork() with
-                        | Cfg.Mainnet -> shuffle mainDnsSeeds
-                        | Cfg.Testnet -> shuffle testDnsSeeds
-                        | Cfg.Regtest -> failwith "unsupported network"
-        let port = match Cfg.getNetwork() with
-                   | Cfg.Mainnet -> 8333
-                   | Cfg.Testnet -> 18333
-                   | Cfg.Regtest -> failwith "unsupported network"
-
-        let maxPeers = Cfg.getMaxPeers()
-
-        let rec getPeerCandidates candidates seed = job {
-            let! addrs = Dns.GetHostAddressesAsync(seed)
-            let connectAlts = 
-                addrs 
-                |> Array.map (fun ip -> 
-                    let s = new Socket(ip.AddressFamily, SocketType.Stream, ProtocolType.Tcp)
-                    Socket.connect s ip port)
-        }
-
-        ()
-    }
+    let getSeedAddresses() = 
+        Cfg.getDnsSeeds() 
+        |> Seq.map (Dns.lookup >-> Dns.spreadAddr)
+        |> Job.conCollect
+        |> Job.map Seq.concat
 

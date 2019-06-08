@@ -10,6 +10,17 @@ open Logary.Targets
 
 type BitcoinNetwork = | Mainnet | Testnet | Regtest
 
+let private mainDnsSeeds = 
+        [| "dnsseed.bluematt.me";
+           "seed.bitcoin.sipa.be";
+           "dnsseed.bitcoin.dashjr.org";
+           "seed.bitcoinstats.com";
+           "seed.bitcoin.jonasschnelli.ch";
+           "seed.btc.petertodd.org" |]
+
+let private testDnsSeeds = 
+        [| "seed.tbtc.petertodd.org" |]
+
 type Arguments =
     | [<Mandatory>] Network of BitcoinNetwork
     | Log_Level of LogLevel
@@ -71,6 +82,18 @@ let getLogger (name:string) =
 let getNetwork () = 
     let pa = Option.get parsedArgs
     pa.GetResult Network
+
+let getPort () =
+    match getNetwork() with
+    | Mainnet -> 8333
+    | Testnet -> 18333
+    | Regtest -> failwith "unsupported network"
+
+let getDnsSeeds () =
+    match getNetwork() with
+    | Mainnet -> mainDnsSeeds
+    | Testnet -> testDnsSeeds
+    | Regtest -> failwith "unsupported network"
 
 let getMaxPeers () =
     let pa = Option.get parsedArgs
