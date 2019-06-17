@@ -7,9 +7,13 @@ open Logary
 open Logary.Message
 open Hopac
 
+// BitThicket
+open Util
 
 module private Socket =
-    let _log = Cfg.getLogger "Network.Socket"
+    let rec private _moduleType = getModuleType <@ _moduleType @>
+
+    let _log = Cfg.getLogger _moduleType.FullName
 
     type SocketExn(error:SocketError) =
         inherit exn()
@@ -52,7 +56,8 @@ module private Socket =
         ) |> Alt.fromAsync
 
 module Peers =
-    let _log = Cfg.getLogger "Network.PeerLookup"
+    let rec private _moduleType = getModuleType <@ _moduleType @>
+    let _log = Cfg.getLogger _moduleType.FullName
 
     type PeerDescriptor =
         { address : string }

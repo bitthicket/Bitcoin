@@ -9,14 +9,16 @@ open System.Net
 
 open BitThicket.Bitcoin.Daemon.Cfg
 open BitThicket.Bitcoin.Daemon.Network
+open BitThicket.Bitcoin.Daemon.Util
 
+let rec private _moduleType = getModuleType <@ _moduleType @>
 
 [<EntryPoint>]
 let main argv =
     use mre = new System.Threading.ManualResetEventSlim(false);
     use sub = Console.CancelKeyPress.Subscribe(fun _ -> mre.Set())
 
-    let log = getLogger "main"
+    let log = getLogger _moduleType.FullName
 
     match setArgs argv with
     | Ok _ -> 

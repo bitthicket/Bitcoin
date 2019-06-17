@@ -8,6 +8,11 @@ open Logary.Configuration
 open Logary.Message
 open Logary.Targets
 
+// BitThicket
+open Util
+
+let rec private _moduleType = getModuleType <@ _moduleType @>
+
 type BitcoinNetwork = | Mainnet | Testnet | Regtest
 
 let private mainDnsSeeds = 
@@ -34,17 +39,21 @@ with
             | MaxPeers _ -> "Node will connect to no more peers than this"
 
 let private defaultLogLevel = Info
-
 let private buildLogary() = 
+    let console = LiterateConsole.create LiterateConsole.empty "console"
+    let logfileName = File.Naming ("{service}-{date}", "log")
+    let logfile = File.create (File.FileConf.create Environment.CurrentDirectory logfileName) "file"
     Config.create "BitThicket.Bitcoin.Daemon" (Dns.GetHostName())
-    |> Config.target (LiterateConsole.create LiterateConsole.empty "console")
+    |> Config.targets [console; logfile] 
     |> Config.ilogger (ILogger.Console Info)
     |> Config.build
     |> run
 
-let mutable private logary = buildLogary()
+let private logary = buildLogary()
+let getLogger (name:string) =
+    logary.getLogger (PointName.parse name)
 
-let private log = logary.getLogger "Cfg"
+let private log = logary.getLogger _moduleType.FullName
 let mutable private parsedArgs : ParseResults<Arguments> option = None
 
 let errorHandler = ProcessExiter(colorizer = function 
@@ -74,9 +83,6 @@ let getArgs() =
     | None ->
         log.error (eventX ("Attempt to retrieve args before initialization"))
         Result.Error()
-
-let getLogger (name:string) =
-    logary.getLogger name
 
 let getNetwork () = 
     let pa = Option.get parsedArgs
