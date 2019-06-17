@@ -44,7 +44,7 @@ let private buildLogary() =
 
 let mutable private logary = buildLogary()
 
-let private log = logary.getLogger "Configuration.Agent"
+let private log = logary.getLogger "Cfg"
 let mutable private parsedArgs : ParseResults<Arguments> option = None
 
 let errorHandler = ProcessExiter(colorizer = function 
@@ -62,9 +62,8 @@ let setArgs args =
         let pa = parser.Parse args
         let logLevel = pa.GetResult(Log_Level, Info)
         
-        if (logLevel <> defaultLogLevel) then 
-            logary.shutdown() |> ignore
-            logary <- buildLogary()
+        log.info (eventX <| sprintf "Setting log level: %A" logLevel)
+        logary.switchLoggerLevel (".*", logLevel)
 
         parsedArgs <- pa |> Some
         Result.Ok()
