@@ -10,7 +10,6 @@ nuget FAKE
 nuget FSharp.Core
 nuget Hopac
 nuget Logary >= 5.0.0 prerelease
-nuget Microsoft.AspNetCore.App
 nuget System.Security.Cryptography.Cng
 
 github bitthicket/logary src/Logary.Facade/Facade.fs
