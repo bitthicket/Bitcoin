@@ -1,12 +1,12 @@
 module BitThicket.Bitcoin.Daemon.Network
-open System
-open System.Collections.Generic
 open System.Net
 open System.Net.Sockets
 open Hopac
 open Hopac.Infixes
 open Logary
 open Logary.Message
+open Hopac
+
 
 module private Socket =
     let _log = Cfg.getLogger "Network.Socket"
@@ -51,23 +51,56 @@ module private Socket =
                 econt exn
         ) |> Alt.fromAsync
 
-module private Dns =
-    let lookup (hostname:string) = job {
-        return! Dns.GetHostEntryAsync(hostname)
-    }
-
-    let spreadAddr (entry:IPHostEntry) = 
-        seq entry.AddressList
-
-module private Peers =
+module Peers =
     let _log = Cfg.getLogger "Network.PeerLookup"
 
     type PeerDescriptor =
         { address : string }
 
-    let getSeedAddresses() = 
-        Cfg.getDnsSeeds() 
-        |> Seq.map (Dns.lookup >-> Dns.spreadAddr)
-        |> Job.conCollect
-        |> Job.map Seq.concat
+    let lookup (hostname:string) =
+        _log.debug (eventX <| sprintf "looking up %s" hostname)
+        Alt.fromTask (fun ct -> Dns.GetHostEntryAsync(hostname))
 
+    let sendHost (ch:Ch<IPHostEntry>) (iphe:IPHostEntry) = 
+        _log.debug (eventX <| sprintf "got IPHostEntry, sending")
+        ch *<- iphe
+
+    let getSeedAddresses ch = 
+        _log.debug (eventX <| sprintf "doing seed lookup")
+        Cfg.getDnsSeeds()
+        |> Array.map (fun seed -> lookup seed ^=> sendHost ch)
+        |> Job.seqCollect
+
+    let startDiscoveryServer () = job {
+        let ch = Ch<IPHostEntry>()
+        let rec server () = job {
+            _log.debug (eventX <| sprintf "waiting on IPHostEntry")
+            let! iphe = Ch.take ch
+            _log.debug (eventX <| sprintf "got IPHostEntry with %d addresses" iphe.AddressList.Length)
+            return! server()
+        }
+        do! Job.start (server())
+        return ch
+    }
+(*
+    let takeInt ch = job {
+        printfn "taking int"
+        let! x = Ch.take ch
+        printfn "int: %d" x
+    }
+
+    let intServer () = job {
+        let c = Ch<uint64>()
+        let rec server () = job {
+            let! i = Ch.take c
+            printfn "int: %d" i
+            return! server ()
+        }
+        do! Job.start (server ())
+        return c
+    }
+
+    let giveInt ch x = job {
+        return! Ch.give ch x
+    }
+*)
