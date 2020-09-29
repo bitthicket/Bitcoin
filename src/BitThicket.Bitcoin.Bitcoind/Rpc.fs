@@ -1,4 +1,7 @@
 namespace BitThicket.Bitcoin.Bitcoind.Rpc
+open System
+open System.Net.Sockets
+open Hopac
 
 (*
     Possible additional modeling:
@@ -44,5 +47,23 @@ type Command =
     | VerifyChain of checkLevel:int option * nblocks:int option
     | VerifyTxOutProof of proof:string
 
+type RpcClient() =
+    member internal _.TcpClient = new TcpClient()
+    interface IDisposable with
+        member this.Dispose() =
+            this.TcpClient.Dispose()
+
 module RpcClient =
-    ()
+    let connect (host:string) port : Job<Result<RpcClient,exn>> = 
+        let port = defaultValueArg port 8333
+        let client = new RpcClient()
+        
+        job {
+            try
+                do! client.TcpClient.ConnectAsync(host, port) 
+                    |> Job.awaitUnitTask
+                return Ok client
+            with
+            | x -> 
+                return Error x
+        }
