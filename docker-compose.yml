@@ -1,0 +1,12 @@
+version: "3.8"
+services:
+    bitcoind:
+        image: ruimarinho/bitcoin-core:0.20.1-alpine
+        command:
+            -printtoconsole
+            -chain=regtest
+            -rpcallowip=0.0.0.0/0
+            -rpcbind=0.0.0.0
+            -rpcauth='bitcoind_test:36f9854a-19ec-4d77-b205-6cf5e86b1d11'
+        ports:
+            - "18444"
