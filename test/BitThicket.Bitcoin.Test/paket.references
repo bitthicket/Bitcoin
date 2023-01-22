@@ -1,1 +1,7 @@
+group Build
 FSharp.Core
+xunit
+xunit.runner.console
+xunit.runner.visualstudio
+Unquote
+Microsoft.NET.Test.Sdk

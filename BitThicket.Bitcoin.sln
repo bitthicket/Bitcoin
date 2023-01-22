@@ -27,6 +27,10 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Performance", "Performance"
 		Performance\Report20190407-1635.diagsession = Performance\Report20190407-1635.diagsession
 	EndProjectSection
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "test", "test", "{BF63033D-6524-48E5-9DC7-407127062A1C}"
+EndProject
+Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "BitThicket.Bitcoin.Test", "test\BitThicket.Bitcoin.Test\BitThicket.Bitcoin.Test.fsproj", "{1130777B-A560-418D-8B02-CF24112FAA6C}"
+EndProject
 Global
 	GlobalSection(Performance) = preSolution
 		HasPerformanceSessions = true
@@ -64,6 +68,18 @@ Global
 		{3E54D486-4038-4A65-A570-FABF76CBE768}.Release|x64.Build.0 = Release|Any CPU
 		{3E54D486-4038-4A65-A570-FABF76CBE768}.Release|x86.ActiveCfg = Release|Any CPU
 		{3E54D486-4038-4A65-A570-FABF76CBE768}.Release|x86.Build.0 = Release|Any CPU
+		{1130777B-A560-418D-8B02-CF24112FAA6C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{1130777B-A560-418D-8B02-CF24112FAA6C}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{1130777B-A560-418D-8B02-CF24112FAA6C}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{1130777B-A560-418D-8B02-CF24112FAA6C}.Debug|x64.Build.0 = Debug|Any CPU
+		{1130777B-A560-418D-8B02-CF24112FAA6C}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{1130777B-A560-418D-8B02-CF24112FAA6C}.Debug|x86.Build.0 = Debug|Any CPU
+		{1130777B-A560-418D-8B02-CF24112FAA6C}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{1130777B-A560-418D-8B02-CF24112FAA6C}.Release|Any CPU.Build.0 = Release|Any CPU
+		{1130777B-A560-418D-8B02-CF24112FAA6C}.Release|x64.ActiveCfg = Release|Any CPU
+		{1130777B-A560-418D-8B02-CF24112FAA6C}.Release|x64.Build.0 = Release|Any CPU
+		{1130777B-A560-418D-8B02-CF24112FAA6C}.Release|x86.ActiveCfg = Release|Any CPU
+		{1130777B-A560-418D-8B02-CF24112FAA6C}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -71,6 +87,7 @@ Global
 	GlobalSection(NestedProjects) = preSolution
 		{3C9B1EC6-21AE-4B63-823C-58B83ADB3119} = {7F264EF7-0EA1-482C-989F-61882410FE60}
 		{3E54D486-4038-4A65-A570-FABF76CBE768} = {7F264EF7-0EA1-482C-989F-61882410FE60}
+		{1130777B-A560-418D-8B02-CF24112FAA6C} = {BF63033D-6524-48E5-9DC7-407127062A1C}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {47456941-DAE3-4ED0-8D53-55C7A34F1364}
