@@ -45,7 +45,7 @@ module Base58 =
     let private divrem n d =
         let rem : bigint ref = ref 0I
         let next = bigint.DivRem(n, d, rem)
-        (next, !rem)
+        (next, rem.Value)
 
     let rec private _encode (acc:MemoryStream) n =
         if n = 0I then
@@ -54,11 +54,11 @@ module Base58 =
         else
             let rem : bigint ref = ref 0I
             let next = bigint.DivRem(n, 58I, rem)
-            acc.WriteByte(!rem |> byte)
+            acc.WriteByte(rem.Value |> byte)
             _encode acc next
 
     // this could definitely benefit from Span work
-    /// expects input array to be in big-endian order (higher-order bytes precede lower-order ones 
+    /// expects input array to be in big-endian order (higher-order bytes precede lower-order ones
     /// - i.e., data[0] is the MSB)
     let encode (data:byte array) =
         use ms = new MemoryStream()
@@ -71,11 +71,11 @@ module Base58 =
              |> _decode (s.Substring(1))
 
     let decode (data:string) =
-        validate data 
+        validate data
         // this is tricky because when BigInteger.ToByteArray() is called, it will insert a leading zero byte if necessary
         // to ensure a positive value when the array is round-tripped.
-        |> Result.bind (fun (Base58String encoding) -> 
-                            _decode encoding 0I 
+        |> Result.bind (fun (Base58String encoding) ->
+                            _decode encoding 0I
                             |> if data.[0] = '1' then Bits.ensureZeroMsByte else Bits.removeZeroMsBytes
                             |> Ok)
 
@@ -85,7 +85,7 @@ module Base58Check =
 
     type Base58CheckString = Base58CheckString of string
 
-    let inline private doubleHash (prefixAndPayload:byte array) = 
+    let inline private doubleHash (prefixAndPayload:byte array) =
       use sha256 = SHA256.Create()
       sha256.ComputeHash(prefixAndPayload) |> sha256.ComputeHash
 
@@ -100,8 +100,8 @@ module Base58Check =
         doubleHash unchecked |> (fun cs -> cs.[..3]) |> Array.append unchecked
 
     /// Expects data to be in big-endian byte order
-    let encode payload = 
+    let encode payload =
         encodeChecked payload |> Base58.encode |> Base58CheckString
 
-    let decode encodedString =    
+    let decode encodedString =
         Base58.decode encodedString |> Result.bind (validateChecksum >> Result.mapError Base58CheckError)

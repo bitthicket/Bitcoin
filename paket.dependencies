@@ -5,10 +5,7 @@ nuget Argu
 nuget FAKE
 nuget FSharp.Core
 nuget Hopac
-nuget Logary >= 5.0.0 prerelease
 nuget System.Security.Cryptography.Cng
-
-github bitthicket/logary src/Logary.Facade/Facade.fs
 
 group Build
 source https://api.nuget.org/v3/index.json

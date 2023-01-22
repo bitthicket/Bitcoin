@@ -5,19 +5,10 @@ NUGET
       FSharp.Core (>= 4.3.2)
       System.Configuration.ConfigurationManager (>= 4.4)
     FAKE (5.16)
-    FParsec (1.1.1)
-      FSharp.Core (>= 4.3.4)
     FSharp.Core (7.0)
     Hopac (0.5.1)
       FSharp.Core (>= 4.5.2)
-    Logary (5.0.1)
-      FParsec (>= 1.1.1)
-      FSharp.Core (>= 4.7)
-      Hopac (>= 0.4.1)
-      NodaTime (>= 2.4.8)
     Microsoft.Win32.SystemEvents (7.0)
-    NodaTime (3.1.6)
-      System.Runtime.CompilerServices.Unsafe (>= 4.7.1)
     System.Configuration.ConfigurationManager (7.0)
       System.Diagnostics.EventLog (>= 7.0)
       System.Security.Cryptography.ProtectedData (>= 7.0)
@@ -26,7 +17,6 @@ NUGET
     System.Drawing.Common (7.0)
       Microsoft.Win32.SystemEvents (>= 7.0)
     System.Formats.Asn1 (7.0)
-    System.Runtime.CompilerServices.Unsafe (6.0)
     System.Security.Cryptography.Cng (5.0)
       System.Formats.Asn1 (>= 5.0)
     System.Security.Cryptography.ProtectedData (7.0)
@@ -34,9 +24,7 @@ NUGET
       System.Windows.Extensions (>= 7.0)
     System.Windows.Extensions (7.0)
       System.Drawing.Common (>= 7.0)
-GITHUB
-  remote: bitthicket/logary
-    src/Logary.Facade/Facade.fs (896c5dd6c9e49ca4b7ea13b3f21093141db3a116)
+
 GROUP Build
 NUGET
   remote: https://api.nuget.org/v3/index.json
