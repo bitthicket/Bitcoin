@@ -8,7 +8,7 @@ open Swensen.Unquote
 open BitThicket.Bitcoin
 
 //#region test1 data
-let test1_k = [|0x1euy; 0x99uy; 0x42uy; 0x3auy; 0x4euy; 0xd2uy; 0x76uy; 0x08uy; 0xa1uy; 0x5auy; 0x26uy; 0x16uy; 0xa2uy; 0xb0uy; 
+let test1_k = [|0x1euy; 0x99uy; 0x42uy; 0x3auy; 0x4euy; 0xd2uy; 0x76uy; 0x08uy; 0xa1uy; 0x5auy; 0x26uy; 0x16uy; 0xa2uy; 0xb0uy;
                0xe9uy; 0xe5uy; 0x2cuy; 0xeduy; 0x33uy; 0x0auy; 0xc5uy; 0x30uy; 0xeduy; 0xccuy; 0x32uy; 0xc8uy; 0xffuy; 0xc6uy;
                0xa5uy; 0x26uy; 0xaeuy; 0xdduy|]
 let test1_x = [|0xF0uy; 0x28uy; 0x89uy; 0x2Buy; 0xADuy; 0x7Euy; 0xD5uy; 0x7Duy; 0x2Fuy; 0xB5uy; 0x7Buy; 0xF3uy; 0x30uy; 0x81uy;
@@ -42,7 +42,7 @@ let test2_wifCompressed = "KyBsPXxTuVD82av65KZkrGrWi5qLMah5SdNq6uftawDbgKa2wv6S"
 
 [<Fact>]
 [<Trait("Category", "Base58")>]
-let encode_hello () = 
+let encode_hello () =
     let input = Encoding.UTF8.GetBytes("hello")
 
     test <@ Base58.encode input = "Cn8eVZg" @>
@@ -60,12 +60,21 @@ let decode_bytes () =
                         0x80uy;
                         // payload
                         0x1euy; 0x99uy; 0x42uy; 0x3auy; 0x4euy; 0xd2uy; 0x76uy; 0x08uy;
-                        0xa1uy; 0x5auy; 0x26uy; 0x16uy; 0xa2uy; 0xb0uy; 0xe9uy; 0xe5uy; 
-                        0x2cuy; 0xeduy; 0x33uy; 0x0auy; 0xc5uy; 0x30uy; 0xeduy; 0xccuy; 
+                        0xa1uy; 0x5auy; 0x26uy; 0x16uy; 0xa2uy; 0xb0uy; 0xe9uy; 0xe5uy;
+                        0x2cuy; 0xeduy; 0x33uy; 0x0auy; 0xc5uy; 0x30uy; 0xeduy; 0xccuy;
                         0x32uy; 0xc8uy; 0xffuy; 0xc6uy; 0xa5uy; 0x26uy; 0xaeuy; 0xdduy;
                         // checksum
                         0xc4uy; 0x7euy; 0x83uy; 0xffuy|]
                     |> Ok
+
+                    (*
+                        80
+                        1e 99 42 3a 4e d2 76 08
+                        a1 5a 26 16 a2 b0 e9 e5
+                        2c ed 33 0a c5 30 ed cc
+                        32 c8 ff c6 a5 26 ae dd
+                        c4 7e 83 ff
+                    *)
 
     test <@ Base58.decode input = expected @>
 
@@ -118,7 +127,7 @@ let ``fail checksum validation`` () =
 //     let actual = Encoding.encodeUnchecked Address.AddressType.WIFCompressed test1_k
 
 //     test <@ expected = actual @>
-    
+
 // [<Fact>]
 // [<Trait("Category", "Address")>]
 // let ``test2 k => WIF`` () =
@@ -141,10 +150,10 @@ let ``fail checksum validation`` () =
 // let ``validate WIF key`` () =
 //     let testWif = "5J3mBbAH58CpQ3Y5RNJpUKPE62SQ5tfcvU2JpbnkeyhfsYB1Jcn"
 //     // Encoding.validateAddress ??
-    
+
 
 // //     testCase "validate WIF key" <| fun _ ->
-// //       let testWif = 
+// //       let testWif =
 
 // //       Encoding.validateAddress testWif
 // //       |> Expect.isOk "Valid address failed validation"
