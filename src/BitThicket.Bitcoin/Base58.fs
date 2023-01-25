@@ -64,11 +64,11 @@ module Base58 =
         use ms = new MemoryStream()
         data |> Array.append [|0uy|] |> Array.rev |> bigint |> _encode ms
 
-    let rec private _decode (s:string) (acc:bigint) =
+    let rec private _decode (s:ReadOnlySpan<char>) (acc:bigint) =
         if s.Length = 0 then Bits.Converter.GetBytesBE(acc)
-        else _decTable.[s.[0]]
+        else _decTable[s[0]]
              |> (fun idx -> _58I * acc + idx)
-             |> _decode (s.Substring(1))
+             |> _decode (s.Slice(1))
 
     let decode (data:string) =
         validate data
