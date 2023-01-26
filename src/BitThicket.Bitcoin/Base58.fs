@@ -33,7 +33,7 @@ module Base58 =
                              'M',20I; 'N',21I; 'P',22I; 'Q',23I; 'R',24I; 'S',25I; 'T',26I; 'U',27I; 'V',28I; 'W',29I;
                              'X',30I; 'Y',31I; 'Z',32I; 'a',33I; 'b',34I; 'c',35I; 'd',36I; 'e',37I; 'f',38I; 'g',39I;
                              'h',40I; 'i',41I; 'j',42I; 'k',43I; 'm',44I; 'n',45I; 'o',46I; 'p',47I; 'q',48I; 'r',49I;
-                             's',50I; 't',51I; 't',52I; 'u',53I; 'v',54I; 'w',55I; 'x',56I; 'y',57I; 'z',58I] |> Map.ofList
+                             's',50I; 't',51I; 'u',52I; 'v',53I; 'w',54I; 'x',55I; 'y',56I; 'z',57I] |> Map.ofList
 
     let private _validate raw =
         if String.forall (fun c -> Map.containsKey c _decTable) raw
