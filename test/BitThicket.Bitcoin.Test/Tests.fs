@@ -40,7 +40,7 @@ let test2_wif = "5JG9hT3beGTJuUAmCQEmNaxAuMacCTfXuw1R3FCXig23RQHMr4K"
 let test2_wifCompressed = "KyBsPXxTuVD82av65KZkrGrWi5qLMah5SdNq6uftawDbgKa2wv6S"
 //#endregion
 
-//#region Base58 test data
+//#region Base58 decode test data
 let decode_test_data = seq {
     // 123
     yield [|
@@ -152,13 +152,13 @@ let ``fail checksum validation`` () =
 
     test <@ Result.isOk result @>
 
-// [<Fact>]
-// [<Trait("Category", "Address")>]
-// let ``test1 k => WIF`` () =
-//     let expected = test1_wif
-//     let actual = Encoding.encodeUnchecked Address.AddressType.WIF test1_k
+[<Fact>]
+[<Trait("Category", "Address")>]
+let ``test1 k => WIF`` () =
+    let expected = test1_wif
+    let actual = Encoding.encodeUnchecked Address.AddressType.WIF test1_k
 
-//     test <@ expected = actual @>
+    test <@ expected = actual @>
 
 // [<Fact>]
 // [<Trait("Category", "Address")>]

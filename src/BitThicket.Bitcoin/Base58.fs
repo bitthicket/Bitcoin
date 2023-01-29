@@ -1,5 +1,7 @@
 namespace BitThicket.Bitcoin
 
+#nowarn "3391"
+
 type Base58Error =
     | InvalidBase58String of string
 
