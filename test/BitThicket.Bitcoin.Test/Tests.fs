@@ -156,7 +156,7 @@ let ``fail checksum validation`` () =
 [<Trait("Category", "Address")>]
 let ``test1 k => WIF`` () =
     let expected = test1_wif
-    let actual = Encoding.encodeUnchecked Address.AddressType.WIF test1_k
+    let actual = Encoding.encodeUnchecked Encoding.Version.WIF test1_k
 
     test <@ expected = actual @>
 

@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
+﻿<?xml version="1.0" encoding="utf-8"?>
 <Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <OutputType>Library</OutputType>
@@ -7,12 +7,12 @@
   </PropertyGroup>
   <ItemGroup>
     <Compile Include="AssemblyInfo.fs" />
-    <Compile Include="Bips.fs" />
+    <Compile Include="Bip39.fs" />
     <Compile Include="Util.fs" />
     <Compile Include="Base58.fs" />
     <Compile Include="Encoding.fs" />
     <Compile Include="Key.fs" />
-    <Compile Include="Address.fs"/>
+    <Compile Include="Address.fs" />
     <None Include="Script.fsx" />
   </ItemGroup>
   <ItemGroup>
