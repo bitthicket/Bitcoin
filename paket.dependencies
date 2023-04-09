@@ -5,7 +5,6 @@ nuget Argu
 nuget FAKE
 nuget FSharp.Core ~> 7.0.0
 nuget Hopac
-nuget System.Security.Cryptography.Cng
 
 group Build
 source https://api.nuget.org/v3/index.json

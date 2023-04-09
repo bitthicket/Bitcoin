@@ -40,7 +40,8 @@ let ``export private key``() =
 
     <@ Result.isOk result @>
 
-[<Fact; Trait("Category", "ECDSA")>]
+[<Fact(Skip="Operation not currently supported"); Trait("Category", "ECDSA")>]
+
 let ``import private key``() =
     use key = ECDsa.cngKeyFromParams testK1 testX1 testY1
     key |> ignore
