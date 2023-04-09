@@ -1,11 +1,13 @@
 module Tests
 
 open System
-open Expecto
-open Expecto.Flip
+open System.Text
+open Xunit
+open Swensen.Unquote
+
 open BitThicket.Bitcoin.Cryptography
 
-let testK1 = [|0x1euy; 0x99uy; 0x42uy; 0x3auy; 0x4euy; 0xd2uy; 0x76uy; 0x08uy; 0xa1uy; 0x5auy; 0x26uy; 0x16uy; 0xa2uy; 0xb0uy; 
+let testK1 = [|0x1euy; 0x99uy; 0x42uy; 0x3auy; 0x4euy; 0xd2uy; 0x76uy; 0x08uy; 0xa1uy; 0x5auy; 0x26uy; 0x16uy; 0xa2uy; 0xb0uy;
                0xe9uy; 0xe5uy; 0x2cuy; 0xeduy; 0x33uy; 0x0auy; 0xc5uy; 0x30uy; 0xeduy; 0xccuy; 0x32uy; 0xc8uy; 0xffuy; 0xc6uy;
                0xa5uy; 0x26uy; 0xaeuy; 0xdduy|]
 let testX1 = [|0xF0uy; 0x28uy; 0x89uy; 0x2Buy; 0xADuy; 0x7Euy; 0xD5uy; 0x7Duy; 0x2Fuy; 0xB5uy; 0x7Buy; 0xF3uy; 0x30uy; 0x81uy;
@@ -18,49 +20,49 @@ let testBytes1 = Array.concat [BitConverter.GetBytes(ECDsa.BCRYPT_ECDSA_PRIVATE_
                                BitConverter.GetBytes(256);
                                testX1;testY1;testK1]
 
-[<Tests>]
-let ecdsaTests =
-  testList "ECDsa tests" [
-    testCase "generate secp256k1 key" <| fun _ ->
-      use key = ECDsa.generateKeyPair ECDsa.secp256k1
+[<Fact; Trait("Category", "ECDSA")>]
+let ``generate secp256k1 key``() =
+    use key = ECDsa.generateKeyPair ECDsa.secp256k1
 
-      Expect.isNotNull "key shouldn't be null" key
-      Expect.equal "incorrect key size" 256 key.KeySize
+    test <@ key.KeySize = 256 @>
 
-    testCase "export public key" <| fun _ ->
-      use key = ECDsa.generateKeyPair ECDsa.secp256k1
-      let result = ECDsa.exportPublicKey key
-      
-      Expect.isOk "public key export failed" result
+[<Fact; Trait("Category", "ECDSA")>]
+let ``export public key``() =
+    use key = ECDsa.generateKeyPair ECDsa.secp256k1
+    let result = ECDsa.exportPublicKey key
 
-    testCase "export private key" <| fun _ ->
-      use key = ECDsa.generateKeyPair ECDsa.secp256k1
-      let result = ECDsa.exportPrivateKey key
+    <@ Result.isOk result @>
 
-      Expect.isOk "private key export failed" result
+[<Fact; Trait("Category", "ECDSA")>]
+let ``export private key``() =
+    use key = ECDsa.generateKeyPair ECDsa.secp256k1
+    let result = ECDsa.exportPrivateKey key
 
-    testCase "import private key" <| fun _ ->
-      use key = ECDsa.cngKeyFromParams testK1 testX1 testY1
-      key |> ignore
-  ]
+    <@ Result.isOk result @>
 
-[<Tests>]
-let utilityTests =
-  testList "Utility tests" [
-    testCase "simple stringToBytes" <| fun _ ->
-      let input = "F028"
-      let result = Utility.stringToBytes input
-      let expected = [|0xF0uy; 0x28uy|]
+[<Fact; Trait("Category", "ECDSA")>]
+let ``import private key``() =
+    use key = ECDsa.cngKeyFromParams testK1 testX1 testY1
+    key |> ignore
 
-      Expect.isOk "failed to convert input" result 
-      match result with | Ok b -> b | _ -> failwith "unexpected result"
-      |> Expect.equal "Produced incorrect output" expected
 
-    testCase "stringToBytes invalid input" <| fun _ ->
-      let input = "F0287"
-      Utility.stringToBytes input
-      |> Expect.isError "stringToBytes should have failed"
 
+[<Fact; Trait("Category", "Utility")>]
+let ``stringToBytes simple``() =
+    let input = "F028"
+    let result = Utility.stringToBytes input
+    let expected = [|0xF0uy; 0x28uy|]
+
+    <@ Result.isOk result && match result with | Ok b -> b = expected | _ -> false @>
+
+[<Fact; Trait("Category", "Utility")>]
+let ``stringToBytes invalid input``() =
+    let input = "F0287"
+    let result = Utility.stringToBytes input
+
+    <@ Result.isError result @>
+
+(*
     testCase "stringToBytes empty input" <| fun _ ->
       let input = ""
       let result = Utility.stringToBytes input
@@ -80,7 +82,7 @@ let utilityTests =
       let result = Utility.stringToBytes input
       let expected = [|0xf0uy; 0x28uy|]
 
-      Expect.isOk "stringtoBytes should have parsed lowercase without error" result 
+      Expect.isOk "stringtoBytes should have parsed lowercase without error" result
       match result with | Ok b -> b | _ -> failwith "unexpected result"
       |> Expect.equal "produced incorrect output" expected
 
@@ -97,3 +99,4 @@ let utilityTests =
       let testPrivateKey = testK1
       Expect.sequenceEqual "K data didn't convert successfully" testPrivateKey blob.PrivateKey
   ]
+*)

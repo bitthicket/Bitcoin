@@ -5,6 +5,7 @@ module Tests
 open System.Text
 open Xunit
 open Swensen.Unquote
+
 open BitThicket.Bitcoin
 
 //#region test1 data

@@ -1,7 +1,3 @@
-module BitThicket.Bitcoin.Cryptography.Test
+module Program
 
-open Expecto
-
-[<EntryPoint>]
-let main argv =
-    Tests.runTestsInAssembly defaultConfig argv
+let [<EntryPoint>] main _ = 0
