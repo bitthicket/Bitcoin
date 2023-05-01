@@ -7,6 +7,7 @@ open Xunit
 open Swensen.Unquote
 
 open BitThicket.Bitcoin
+open BitThicket.Bitcoin.Bips
 
 //#region test1 data
 let test1_k = [|0x1euy; 0x99uy; 0x42uy; 0x3auy; 0x4euy; 0xd2uy; 0x76uy; 0x08uy; 0xa1uy; 0x5auy; 0x26uy; 0x16uy; 0xa2uy; 0xb0uy;
@@ -101,6 +102,7 @@ let decode_test_data = seq {
 }
 //#endregion
 
+//#region Bip39 Tests
 [<Fact>]
 [<Trait("Category", "Base58")>]
 let encode_hello () =
@@ -152,3 +154,23 @@ let ``fail checksum validation`` () =
     let result = Base58.validate testB58BadCheck
 
     test <@ Result.isOk result @>
+
+//#endregion
+
+//#region Bip39 Tests
+
+[<Trait("Category", "Base58")>]
+[<Theory;
+    InlineData(12);
+    InlineData(15);
+    InlineData(18);
+    InlineData(21);
+    InlineData(24)>]
+let ``get mnemonic of correct length`` (length:int) =
+    match Bip39.generateMnemonic length with
+    | Ok mnemonic ->
+        test <@ Seq.length mnemonic = length @>
+    | Error msg ->
+        failwithf "mnemonnic generation failed: %s" msg
+
+//#endregion

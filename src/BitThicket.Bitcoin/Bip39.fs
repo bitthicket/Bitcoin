@@ -52,7 +52,7 @@ module rec Bip39 =
         let result = hash[0..csumLen]
         result
 
-    let getMnemonic length =
+    let generateMnemonic length =
         if length <> 12
            && length <> 15
            && length <> 18
@@ -60,7 +60,7 @@ module rec Bip39 =
            && length <> 24
         then Error("invalid mnemonic length")
         else
-            let entropyLength = 12*11 - (12*11/32)
+            let entropyLength = length*11 - (length*11/32)
             match getEntropy entropyLength with
             | Error(err) -> Error(err)
             | Ok entropy ->
