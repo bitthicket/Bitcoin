@@ -5,6 +5,8 @@ module ECDsa =
     open System.Security.Cryptography
     open System.Text
 
+    // TODO: implement RFC 6979
+
     let BCRYPT_ECDSA_PRIVATE_P256_MAGIC =   0x32534345
     let BCRYPT_ECDSA_PUBLIC_P256_MAGIC =    0x31534345
 
