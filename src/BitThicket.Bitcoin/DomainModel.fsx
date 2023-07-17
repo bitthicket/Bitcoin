@@ -1,4 +1,4 @@
-
+open FSharp.Core
 // encodings
 
 type Base58String = Base58String of string
@@ -62,20 +62,4 @@ module Transaction =
         let NO_LOCKTIME               = 1 <<< 31
         let LOCKTIME_TYPE_SECONDS     = 1 <<< 22
         let LOCKTIME_VALUE_MASK       = 0x0000FFFF
-
-module Network =
-
-    open System.Net
-
-    type VersionMessage =
-        { Version: int                      // nVersion
-          Services: uint64                  // nServices
-          Timestamp: uint64                 // nTime
-          ReceiverAddress: IPAddress        // addrYou
-          SenderAddress: IPAddress          // addrMe
-          ServerAgent: string               // subver
-          BlockHeight: int }
-
-    type VersionAckMessage =
-        { asdf : int }
 
