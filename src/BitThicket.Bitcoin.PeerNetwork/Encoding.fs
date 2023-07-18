@@ -44,7 +44,7 @@ module Encoding =
     let encodeMessagePayload msg =
         let tag = getMessageTag msg
         let buf = Array.zeroCreate<byte> 1024
-        use writer = new ProtocolWriter(new MemoryStream(), Encoding.UTF8)
+        use writer = new ProtocolWriter(new MemoryStream(buf), Encoding.UTF8)
 
         match msg with
         | Version(version) ->
