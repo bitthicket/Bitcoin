@@ -6,13 +6,11 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Compile Include="Protocol.fs" />
-    <Compile Include="Encoding.fs" />
+    <Compile Include="$(PaketRootPath)/paket-files/fsprojects/FSharp.TypeProviders.SDK/src/ProvidedTypes.fsi" />
+    <Compile Include="$(PaketRootPath)/paket-files/fsprojects/FSharp.TypeProviders.SDK/src/ProvidedTypes.fs" />
+    <Compile Include="EncoderProvider.fs"/>
   </ItemGroup>
 
-  <ItemGroup>
-    <ProjectReference Include="..\BitThicket.Bitcoin.PeerNetwork.TypeProviders\BitThicket.Bitcoin.PeerNetwork.TypeProviders.fsproj" />
-  </ItemGroup>
   <Import Project="..\..\.paket\Paket.Restore.targets" />
 
 </Project>

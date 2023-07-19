@@ -1,19 +1,29 @@
 source https://api.nuget.org/v3/index.json
-
 framework: auto-detect
+
 nuget Argu
 nuget FAKE
 nuget FSharp.Core ~> 7.0.0
 nuget Hopac
-nuget FSharp.Compiler.Service
+
+github fsprojects/FSharp.TypeProviders.SDK src/ProvidedTypes.fsi
+github fsprojects/FSharp.TypeProviders.SDK src/ProvidedTypes.fs
 
 group Build
 source https://api.nuget.org/v3/index.json
 nuget FSharp.Core ~> 7.0.0
+nuget FAKE
 nuget xunit
 nuget xunit.runner.console
 nuget xunit.runner.visualstudio
 nuget Unquote
 nuget Microsoft.NET.Test.Sdk
 
-nuget FAKE
+group Generators
+source https://api.nuget.org/v3/index.json
+nuget FSharp.Core ~> 7.0.0
+nuget FSharp.Compiler.Service
+nuget Myriad.Core
+nuget FsAst
+nuget Fantomas.Core ~> 5.0.6
+nuget Fantomas.FCS ~> 5.0.6
