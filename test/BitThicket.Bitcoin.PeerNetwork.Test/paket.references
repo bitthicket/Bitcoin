@@ -5,3 +5,4 @@ xunit.runner.console
 xunit.runner.visualstudio
 Unquote
 Microsoft.NET.Test.Sdk
+FsUnit.xUnit

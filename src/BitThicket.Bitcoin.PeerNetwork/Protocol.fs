@@ -64,7 +64,7 @@ module Protocol =
 
           serverAgent: string
 
-          blockHeight: int }
+          blockHeight: uint32 }
 
     type MessagePayload =
         | Version of VersionMessage
