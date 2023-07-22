@@ -1,26 +1,29 @@
-module Tests
+module BitThicket.Bitcoin.PeerNetwork.EncodingTests
 
 open System
 open System.Linq
 open System.Net
+open Microsoft.FSharp.Data.UnitSystems.SI.UnitSymbols
+
 open FsUnit
 open Swensen.Unquote
 open Xunit
 open BitThicket.Bitcoin.PeerNetwork
 open BitThicket.Bitcoin.PeerNetwork.Protocol
 
+
 [<Fact>]
-let ``Message encoding - basic version paylad test`` () =
+let ``basic version paylad test`` () =
     // using example from: https://en.bitcoin.it/wiki/Protocol_documentation#version
     let payload =
         {
             version = 60002u
-            services = 1UL
-            timestamp = 1355839953000UL
-            receiverServices = 1UL
+            services = NodeServices.Network
+            timestamp = 1355839953UL<s>
+            receiverServices = NodeServices.Network
             receiverAddress = IPAddress.Parse("10.0.0.1")
             receiverPort = 8333us
-            senderServices = 1UL
+            senderServices = NodeServices.Network
             senderAddress = IPAddress.Parse("10.0.0.1")
             senderPort = 8333us
             nonce = 0x3b2eb35d8ce61765UL
@@ -32,21 +35,21 @@ let ``Message encoding - basic version paylad test`` () =
     let expected = [|
         // header
         // -- magic
-        0x07uy; 0x09uy; 0x11uy; 0x0buy
+        0x0buy; 0x11uy; 0x09uy; 0x07uy
         // -- command "version"
         0x76uy; 0x65uy; 0x72uy; 0x73uy; 0x69uy; 0x6fuy; 0x6euy; 0x00uy; 0x00uy; 0x00uy; 0x00uy; 0x00uy
         // -- payload length: 84 + 1 + 15 = 100 = 0x64
         0x64uy; 0x00uy; 0x00uy; 0x00uy
         // -- checksum (sha256(sha256(payload))
-        0x49uy; 0x2auy; 0x4fuy; 0x79uy;
+        0x74uy; 0xa7uy; 0xd7uy; 0x65uy
 
         // payload
         // -- version (24, 4): 60002u
         0x62uy; 0xeauy; 0x00uy; 0x00uy
         // -- services (28, 8): 1UL
         0x01uy; 0x00uy; 0x00uy; 0x00uy; 0x00uy; 0x00uy; 0x00uy; 0x00uy
-        // -- timestamp (36, 8): 1355839953000UL
-        0x68uy; 0xd8uy; 0x5buy; 0xaeuy; 0x3buy; 0x01uy; 0x00uy; 0x00uy
+        // -- timestamp (36, 8): 1355839953UL
+        0xd1uy; 0x79uy; 0xd0uy; 0x50uy; 0x00uy; 0x00uy; 0x00uy; 0x00uy
         // -- receiverServices (44, 8): 1UL
         0x01uy; 0x00uy; 0x00uy; 0x00uy; 0x00uy; 0x00uy; 0x00uy; 0x00uy
         // -- receiverAddress (52, 16): ::ffff:10.0.0.1, bigendian
@@ -142,6 +145,41 @@ let ``Message encoding - basic version paylad test`` () =
     test <@ actual.Length = expected.Length @>
 
     // moving this last because it's the most likely to change
+    let checksumExpected = ArraySegment(expected, 20, 4)
+    let checksumActual = ArraySegment(actual, 20, 4)
+    test <@ checksumExpected.SequenceEqual(checksumActual) @>
+
+[<Fact>]
+let ``basic verack payload test`` () =
+    let expected = [|
+    // header
+        // -- magic
+        0x0buy; 0x11uy; 0x09uy; 0x07uy
+        // -- command "verack"
+        0x76uy; 0x65uy; 0x72uy; 0x61uy; 0x63uy; 0x6buy; 0x00uy; 0x00uy; 0x00uy; 0x00uy; 0x00uy; 0x00uy
+        // -- payload length: 0
+        0x00uy; 0x00uy; 0x00uy; 0x00uy
+        // -- checksum (sha256(sha256(payload))
+        0x5duy; 0xf6uy; 0xe0uy; 0xe2uy;
+    |]
+
+    let actual = Encoding.encodePeerMessage VerAck
+
+    let magicExpected = ArraySegment(expected, 0, 4)
+    let magicActual = ArraySegment(actual, 0, 4)
+    test <@ magicExpected.SequenceEqual(magicActual) @>
+
+    let commandExpected = ArraySegment(expected, 4, 12)
+    let commandActual = ArraySegment(actual, 4, 12)
+    test <@ commandExpected.SequenceEqual(commandActual) @>
+
+    let payloadLengthExpected = ArraySegment(expected, 16, 4)
+    let payloadLengthActual = ArraySegment(actual, 16, 4)
+    test <@ payloadLengthExpected.SequenceEqual(payloadLengthActual) @>
+
+    // check that we didn't over-allocate
+    test <@ actual.Length = expected.Length @>
+
     let checksumExpected = ArraySegment(expected, 20, 4)
     let checksumActual = ArraySegment(actual, 20, 4)
     test <@ checksumExpected.SequenceEqual(checksumActual) @>

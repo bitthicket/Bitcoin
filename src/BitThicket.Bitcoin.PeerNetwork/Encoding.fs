@@ -10,18 +10,44 @@ open Microsoft.FSharp.NativeInterop
 open BitThicket.Bitcoin.PeerNetwork.Protocol
 
 module private MemoryUtils =
-    open System.Runtime.InteropServices
     let inline getReadOnlyMemory (arr:'a array) =
         arr.AsMemory() |> Memory<'a>.op_Implicit
 
-module private ProtocolUtils =
+    let inline writeBytes dest (src:ReadOnlyMemory<byte>) =
+        src.Span.CopyTo(dest)
+        src.Length
+
+    let inline writeUInt16 dest i =
+        BinaryPrimitives.WriteUInt16LittleEndian(dest, i)
+        2
+
+    let inline writeUInt16BigEndian dest i =
+        BinaryPrimitives.WriteUInt16BigEndian(dest, i)
+        2
+
+    let inline writeInt32 dest i =
+        BinaryPrimitives.WriteInt32LittleEndian(dest, i)
+        4
+
+    let inline writeUInt32 dest i =
+        BinaryPrimitives.WriteUInt32LittleEndian(dest, i)
+        4
+
+    let inline writeInt64 dest i =
+        BinaryPrimitives.WriteInt64LittleEndian(dest, i)
+        8
+
+    let inline writeUInt64 dest i =
+        BinaryPrimitives.WriteUInt64LittleEndian(dest, i)
+        8
+
     let getVariableIntLength (i:int64) =
         if i < 0xfd then 1
         elif i <= 0xffff then 3
         elif i <= 0xffffffff then 5
         else 9
 
-    let writeVariableInt (buf:Span<byte>) (i:int64) =
+    let inline writeVariableInt (buf:Span<byte>) (i:int64) =
         if i < 0xfd then
             buf[0] <- byte i
             1
@@ -73,56 +99,96 @@ let private versionPayloadBaseSize =
         4 //blockHeight
     ] |> List.sum
 
+open MemoryUtils
+
 let private calculatePayloadSize = function
     | Version payload ->
         versionPayloadBaseSize
-        + ProtocolUtils.getVariableIntLength (int64 payload.serverAgent.Length)
+        + getVariableIntLength (int64 payload.serverAgent.Length)
         + Encoding.UTF8.GetByteCount(payload.serverAgent)
+    | VerAck -> 0
 
-let private encodeHeader span header =
-    if header.command.Length > 12 then
-        failwith "command must be 12 bytes or less"
-
+let private encodeHeader (span:Span<byte>) header =
     let mutable pos = 0
-    BinaryPrimitives.WriteUInt32LittleEndian(span, header.magic)
-    pos <- pos + 4
-    header.command.Span.CopyTo(span.Slice(pos))
+    pos <- header.magic.AsReadOnlyMemory()
+           |> writeBytes (span.Slice(pos, 4))
+           |> (+) pos
+
+    header.command.AsReadOnlyMemory()
+    |> writeBytes (span.Slice(pos, 12))
+    |> ignore
+
     pos <- pos + 12
-    BinaryPrimitives.WriteUInt32LittleEndian(span.Slice(pos), header.payloadLength)
-    pos <- pos + 4
-    BinaryPrimitives.WriteUInt32LittleEndian(span.Slice(pos), header.checksum)
-    pos + 4
 
-let private encodeVersionPayload span payload =
+    pos <- header.payloadLength
+           |> writeUInt32 (span.Slice(pos, 4))
+           |> (+) pos
+
+    header.checksum.AsReadOnlyMemory()
+    |> writeBytes (span.Slice(pos, 4))
+    |> (+) pos
+
+
+let private encodeVersionPayload (span:Span<byte>) payload =
     let mutable pos = 0
-    BinaryPrimitives.WriteUInt32LittleEndian(span, payload.version)
-    pos <- pos + 4
-    BinaryPrimitives.WriteUInt64LittleEndian(span.Slice(pos), payload.services)
-    pos <- pos + 8
-    BinaryPrimitives.WriteUInt64LittleEndian(span.Slice(pos), payload.timestamp)
-    pos <- pos + 8
-    BinaryPrimitives.WriteUInt64LittleEndian(span.Slice(pos), payload.receiverServices)
-    pos <- pos + 8
-    payload.receiverAddress.MapToIPv6().GetAddressBytes().CopyTo(span.Slice(pos))
-    pos <- pos + 16
-    BinaryPrimitives.WriteUInt16BigEndian(span.Slice(pos), payload.receiverPort)
-    pos <- pos + 2
-    BinaryPrimitives.WriteUInt64LittleEndian(span.Slice(pos), payload.senderServices)
-    pos <- pos + 8
-    payload.senderAddress.MapToIPv6().GetAddressBytes().CopyTo(span.Slice(pos))
-    pos <- pos + 16
-    BinaryPrimitives.WriteUInt16BigEndian(span.Slice(pos), payload.senderPort)
-    pos <- pos + 2
-    BinaryPrimitives.WriteUInt64LittleEndian(span.Slice(pos), payload.nonce)
-    pos <- pos + 8
+    pos <- payload.version
+           |> writeUInt32 (span.Slice(pos, 4))
+           |> (+) pos
+
+    let svc = LanguagePrimitives.EnumToValue payload.services
+    pos <- svc
+           |> writeUInt64 (span.Slice(pos, 8))
+           |> (+) pos
+
+    pos <- uint64 payload.timestamp
+           |> writeUInt64 (span.Slice(pos, 8))
+           |> (+) pos
+
+    let rcvSvc = LanguagePrimitives.EnumToValue payload.receiverServices
+    pos <- rcvSvc
+           |> writeUInt64 (span.Slice(pos, 8))
+           |> (+) pos
+
+    pos <- payload.receiverAddress.MapToIPv6().GetAddressBytes()
+           |> getReadOnlyMemory
+           |> writeBytes (span.Slice(pos, 16))
+           |> (+) pos
+
+    pos <- payload.receiverPort
+           |> writeUInt16BigEndian (span.Slice(pos, 2))
+           |> (+) pos
+
+    let sndSvc = LanguagePrimitives.EnumToValue payload.senderServices
+    pos <- sndSvc
+           |> writeUInt64 (span.Slice(pos, 8))
+           |> (+) pos
+
+    pos <- payload.senderAddress.MapToIPv6().GetAddressBytes()
+           |> getReadOnlyMemory
+           |> writeBytes (span.Slice(pos, 16))
+           |> (+) pos
+
+    pos <- payload.senderPort
+           |> writeUInt16BigEndian (span.Slice(pos, 2))
+           |> (+) pos
+
+    pos <- payload.nonce
+           |> writeUInt64 (span.Slice(pos, 8))
+           |> (+) pos
 
     let agentBytes = Encoding.UTF8.GetBytes(payload.serverAgent)
-    pos <- pos + ProtocolUtils.writeVariableInt (span.Slice(pos)) (int64 agentBytes.Length)
-    agentBytes.CopyTo(span.Slice(pos))
-    pos <- pos + agentBytes.Length
+    let varIntLen = getVariableIntLength (int64 agentBytes.Length)
+    pos <- writeVariableInt (span.Slice(pos, varIntLen)) (int64 agentBytes.Length)
+           |> (+) pos
 
-    BinaryPrimitives.WriteUInt32LittleEndian(span.Slice(pos), payload.blockHeight)
-    pos + 4
+    pos <- agentBytes
+           |> getReadOnlyMemory
+           |> writeBytes (span.Slice(pos, agentBytes.Length))
+           |> (+) pos
+
+    payload.blockHeight
+    |> writeUInt32 (span.Slice(pos, 4))
+    |> (+) pos
 
 
 /// takes a domain model and writes a byte array ready to be sent over the wire
@@ -133,8 +199,8 @@ let encodePeerMessage payload =
         let buf = headerSize + payloadSize
                   |> Array.zeroCreate<byte>
 
-        let headerSpan = buf.AsSpan()
-        let payloadSpan = headerSpan.Slice(headerSize)
+        let headerSpan = buf.AsSpan(0, headerSize)
+        let payloadSpan = buf.AsSpan(headerSize)
 
         let actualPayloadSize = encodeVersionPayload payloadSpan versionPayload
         if actualPayloadSize <> payloadSize then
@@ -144,13 +210,24 @@ let encodePeerMessage payload =
         let payloadChecksum = payloadSpan.Slice(0,payloadSize).ToArray()
                               |> SHA256.HashData
                               |> SHA256.HashData
-                              |> fun arr -> BitConverter.ToUInt32(arr, 0)
+                              |> Array.take 4
+                              |> getReadOnlyMemory
 
-        let header = { magic = currentNetworkMagic
-                       command = Commands.version |> MemoryUtils.getReadOnlyMemory
+        let header = { magic = currentNetworkMagic |> ByteMemoryRef4.op_Implicit
+                       command = Commands.version |> ByteMemoryRef12Max.op_Implicit
                        payloadLength = uint32 payloadSize
-                       checksum = payloadChecksum }
+                       checksum = payloadChecksum |> ByteMemoryRef4.op_Implicit }
 
         encodeHeader headerSpan header |> ignore
+        buf
 
+    | VerAck ->
+        let buf = headerSize |> Array.zeroCreate<byte>
+        let headerSpan = buf.AsSpan()
+        let header = { magic = currentNetworkMagic |> ByteMemoryRef4.op_Implicit
+                       command = Commands.verack |> ByteMemoryRef12Max.op_Implicit
+                       payloadLength = 0u
+                       checksum = EMPTY_PAYLOAD_CHECKSUM |> ByteMemoryRef4.op_Implicit }
+
+        encodeHeader headerSpan header |> ignore
         buf
