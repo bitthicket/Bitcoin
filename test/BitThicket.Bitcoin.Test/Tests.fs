@@ -1,4 +1,4 @@
-module Tests
+module BitThicket.Bitcoin.Base58Tests
 
 #nowarn "0025"
 

@@ -1,4 +1,4 @@
-module Tests
+module BitThicket.Bitcoin.Cryptography.Tests
 
 open System
 open System.Text
