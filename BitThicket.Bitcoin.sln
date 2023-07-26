@@ -37,6 +37,8 @@ Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "BitThicket.Bitcoin.PeerNetw
 EndProject
 Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "BitThicket.Bitcoin.PeerNetwork.Test", "test\BitThicket.Bitcoin.PeerNetwork.Test\BitThicket.Bitcoin.PeerNetwork.Test.fsproj", "{3DB083F9-35A4-450A-8BEA-0258C495B32C}"
 EndProject
+Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "BitThicket.Bitcoin.Client", "src\BitThicket.Bitcoin.Client\BitThicket.Bitcoin.Client.fsproj", "{328753FE-C231-4BF5-90EB-119E2D6D6E78}"
+EndProject
 Global
 	GlobalSection(Performance) = preSolution
 		HasPerformanceSessions = true
@@ -122,6 +124,18 @@ Global
 		{3DB083F9-35A4-450A-8BEA-0258C495B32C}.Release|x64.Build.0 = Release|Any CPU
 		{3DB083F9-35A4-450A-8BEA-0258C495B32C}.Release|x86.ActiveCfg = Release|Any CPU
 		{3DB083F9-35A4-450A-8BEA-0258C495B32C}.Release|x86.Build.0 = Release|Any CPU
+		{328753FE-C231-4BF5-90EB-119E2D6D6E78}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{328753FE-C231-4BF5-90EB-119E2D6D6E78}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{328753FE-C231-4BF5-90EB-119E2D6D6E78}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{328753FE-C231-4BF5-90EB-119E2D6D6E78}.Debug|x64.Build.0 = Debug|Any CPU
+		{328753FE-C231-4BF5-90EB-119E2D6D6E78}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{328753FE-C231-4BF5-90EB-119E2D6D6E78}.Debug|x86.Build.0 = Debug|Any CPU
+		{328753FE-C231-4BF5-90EB-119E2D6D6E78}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{328753FE-C231-4BF5-90EB-119E2D6D6E78}.Release|Any CPU.Build.0 = Release|Any CPU
+		{328753FE-C231-4BF5-90EB-119E2D6D6E78}.Release|x64.ActiveCfg = Release|Any CPU
+		{328753FE-C231-4BF5-90EB-119E2D6D6E78}.Release|x64.Build.0 = Release|Any CPU
+		{328753FE-C231-4BF5-90EB-119E2D6D6E78}.Release|x86.ActiveCfg = Release|Any CPU
+		{328753FE-C231-4BF5-90EB-119E2D6D6E78}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -133,6 +147,7 @@ Global
 		{8D867918-494C-4FE2-B228-A085778E5448} = {BF63033D-6524-48E5-9DC7-407127062A1C}
 		{90C9A6EF-EBF8-4E26-9BA3-55C8406FCA82} = {7F264EF7-0EA1-482C-989F-61882410FE60}
 		{3DB083F9-35A4-450A-8BEA-0258C495B32C} = {BF63033D-6524-48E5-9DC7-407127062A1C}
+		{328753FE-C231-4BF5-90EB-119E2D6D6E78} = {7F264EF7-0EA1-482C-989F-61882410FE60}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {47456941-DAE3-4ED0-8D53-55C7A34F1364}
