@@ -4,11 +4,10 @@ open System
 open System.Buffers.Binary
 open System.Security.Cryptography
 open System.Text
-open FSharp.Reflection
-open Microsoft.FSharp.NativeInterop
 
 open BitThicket.Bitcoin.PeerNetwork.Protocol
 
+// TODO: make this public, probably move to another file
 module private MemoryUtils =
     let inline getReadOnlyMemory (arr:'a array) =
         arr.AsMemory() |> Memory<'a>.op_Implicit
@@ -102,11 +101,11 @@ let private versionPayloadBaseSize =
 open MemoryUtils
 
 let private calculatePayloadSize = function
-    | Version payload ->
+    | MessagePayload.Version payload ->
         versionPayloadBaseSize
         + getVariableIntLength (int64 payload.serverAgent.Length)
         + Encoding.UTF8.GetByteCount(payload.serverAgent)
-    | VerAck -> 0
+    | MessagePayload.VerAck -> 0
 
 let private encodeHeader (span:Span<byte>) header =
     let mutable pos = 0
@@ -195,7 +194,7 @@ let private encodeVersionPayload (span:Span<byte>) payload =
 let encodePeerMessage payload =
     let payloadSize = calculatePayloadSize payload
     match payload with
-    | Version versionPayload ->
+    | MessagePayload.Version versionPayload ->
         let buf = headerSize + payloadSize
                   |> Array.zeroCreate<byte>
 
@@ -221,7 +220,7 @@ let encodePeerMessage payload =
         encodeHeader headerSpan header |> ignore
         buf
 
-    | VerAck ->
+    | MessagePayload.VerAck ->
         let buf = headerSize |> Array.zeroCreate<byte>
         let headerSpan = buf.AsSpan()
         let header = { magic = currentNetworkMagic |> ByteMemoryRef4.op_Implicit
@@ -231,3 +230,6 @@ let encodePeerMessage payload =
 
         encodeHeader headerSpan header |> ignore
         buf
+
+let decodePeerMessage (data:ReadOnlySpan<byte>) =
+    VerAck
