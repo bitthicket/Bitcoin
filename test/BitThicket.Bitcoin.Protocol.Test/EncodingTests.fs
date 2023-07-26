@@ -8,8 +8,8 @@ open Microsoft.FSharp.Data.UnitSystems.SI.UnitSymbols
 open FsUnit
 open Swensen.Unquote
 open Xunit
-open BitThicket.Bitcoin.PeerNetwork
-open BitThicket.Bitcoin.PeerNetwork.Protocol
+open BitThicket.Bitcoin.Protocol
+open BitThicket.Bitcoin.Protocol.Protocol
 
 
 [<Fact>]

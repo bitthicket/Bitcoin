@@ -10,7 +10,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\BitThicket.Bitcoin.PeerNetwork\BitThicket.Bitcoin.PeerNetwork.fsproj" />
+    <ProjectReference Include="..\BitThicket.Bitcoin.Protocol\BitThicket.Bitcoin.Protocol.fsproj" />
   </ItemGroup>
 
   <Import Project="..\..\.paket\Paket.Restore.targets" />

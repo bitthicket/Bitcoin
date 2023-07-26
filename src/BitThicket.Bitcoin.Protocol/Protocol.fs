@@ -1,4 +1,4 @@
-﻿namespace BitThicket.Bitcoin.PeerNetwork
+﻿namespace BitThicket.Bitcoin.Protocol
 
 module Protocol =
 

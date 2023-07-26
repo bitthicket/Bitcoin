@@ -2,8 +2,8 @@
 open System
 open System.Net
 open System.Net.Sockets
-open BitThicket.Bitcoin.PeerNetwork
-open BitThicket.Bitcoin.PeerNetwork.Protocol
+open BitThicket.Bitcoin.Protocol
+open BitThicket.Bitcoin.Protocol.Protocol
 
 /// Represents a connection to a bitcoin node. uri should be a well-formed uri string.
 /// example: "tcp://hostname:port"

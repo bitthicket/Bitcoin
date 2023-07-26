@@ -1,11 +1,11 @@
-module BitThicket.Bitcoin.PeerNetwork.Encoding
+module BitThicket.Bitcoin.Protocol.Encoding
 
 open System
 open System.Buffers.Binary
 open System.Security.Cryptography
 open System.Text
 
-open BitThicket.Bitcoin.PeerNetwork.Protocol
+open BitThicket.Bitcoin.Protocol.Protocol
 
 // TODO: make this public, probably move to another file
 module private MemoryUtils =
