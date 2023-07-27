@@ -43,16 +43,17 @@ let private calculatePayloadSize = function
 
     | VerAck -> 0
 
-let private computeChecksum : ReadOnlySpan<byte> -> byte[] =
-       SHA256.HashData >> SHA256.HashData >> fun hash -> hash.AsSpan().Slice(0,4).ToArray()
+// TODO: is there a way to compute this faster?
+let private computeChecksum (data:ReadOnlySpan<byte>) =
+       SHA256.HashData(SHA256.HashData data).AsSpan().Slice(0,4).ToArray()
 
 let private encodeHeader (span:Span<byte>) header =
     let mutable pos = 0
-    pos <- header.magic.AsReadOnlyMemory()
+    pos <- header.magic.AsMemory()
            |> writeBytes (span.Slice(pos, 4))
            |> (+) pos
 
-    header.command.AsReadOnlyMemory()
+    header.command.AsMemory()
     |> writeBytes (span.Slice(pos, 12))
     |> ignore
 
@@ -62,7 +63,7 @@ let private encodeHeader (span:Span<byte>) header =
            |> writeUInt32 (span.Slice(pos, 4))
            |> (+) pos
 
-    header.checksum.AsReadOnlyMemory()
+    header.checksum.AsMemory()
     |> writeBytes (span.Slice(pos, 4))
     |> (+) pos
 
@@ -143,11 +144,8 @@ let encode msg =
         if actualPayloadSize <> payloadSize then
             failwithf "payload size mismatch; expected %d, actual %d" payloadSize actualPayloadSize
 
-        // TODO: need to make this faster
         let payloadChecksum =
-              payloadSpan.Slice(0,payloadSize)
-              |> Span.op_Implicit
-              |> computeChecksum
+              computeChecksum (Span.op_Implicit (payloadSpan.Slice(0,payloadSize)))
 
         // be aware of implicit conversions here
         let header = { magic = currentNetworkMagic //|> ByteMemoryRef4.op_Implicit
@@ -186,16 +184,16 @@ let decode (header:MessageHeader) (payload:ReadOnlySpan<byte>) =
            failwithf "payload length mismatch; expected %d, actual %d" header.payloadLength payload.Length
 
        // check checksum
-       let checksum = payload |> computeChecksum
+       let checksum = computeChecksum payload
        if not <| areEqualSpans checksum (header.checksum.AsSpan()) then
            failwithf "payload checksum mismatch; expected %A, actual %A" header.checksum checksum
 
        // decode
        match header.command with
-       | versionCmd when areEqualSpans (versionCmd.AsSpan()) Commands.version.bytes ->
-              // do the things
-              Ok ()
+       // | versionCmd when areEqualSpans (versionCmd.AsSpan()) Commands.version.bytes ->
+       //        // do the things
+       //        Ok ()
        | verackCmd when areEqualSpans (verackCmd.AsSpan()) Commands.verack.bytes ->
               // do the things
-              Ok ()
+              Ok VerAck
        | _ -> Error "unknown command"

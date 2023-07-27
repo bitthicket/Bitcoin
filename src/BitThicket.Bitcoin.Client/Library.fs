@@ -41,11 +41,12 @@ type BitcoinClient(uri:string) =
         | e -> return Error e.Message
     }
 
+
     member this.Connect() = async {
         let! hostAddresses = Async.FromBeginEnd(
                                     (fun (callback, state) -> Dns.BeginGetHostAddresses(uri.Host, callback, state)),
                                     Dns.EndGetHostAddresses)
-        let ipEndPoint = IPEndPoint(hostAddresses.[0], uri.Port)
+        let ipEndPoint = IPEndPoint(hostAddresses[0], uri.Port)
 
         // TODO: should I send version after connecting, or let the caller do it?
 
@@ -71,22 +72,24 @@ type BitcoinClient(uri:string) =
                 return Error "incomplete header received"
             else if len > Encoding.headerSize then
                 return Error "received more than header size"
+            else
+                let header = Encoding.decodeHeader headerBuf
 
-            let header = Encoding.decodeHeader headerBuf
+                let expectedCommandSatisifed =
+                    expected |> Option.forall (fun expectedCmd -> areEqualSpans (header.command.AsSpan()) expectedCmd.bytes)
 
-            match expected with
-            | Some expectedCommand ->
-                if not <| areEqualSpans (header.command.AsSpan()) expectedCommand.bytes then
-                    failwithf "Expected command %A, received %A" expectedCommand header.command
-            | _ ->
-                // will throw exception if larger than int.MaxValue; we should never see this.
-                let expectedPayloadLen = Convert.ToInt32 header.payloadLength
-                let payload = Array.zeroCreate expectedPayloadLen
+                if not expectedCommandSatisifed then
+                    return sprintf "Expected command %A, received %A" expected header.command |> Error
+                else
+                    // will throw exception if larger than int.MaxValue; we should never see this.
+                    let expectedPayloadLen = Convert.ToInt32 header.payloadLength
+                    let payload = Array.zeroCreate expectedPayloadLen
 
-                let! len = recv socket payload 0 expectedPayloadLen 0
-                if len <> expectedPayloadLen then
-                    return sprintf "Expected %d bytes, received %d" header.payloadLength len |> Error
-                return Encoding.decode header payload
+                    let! len = recv socket payload 0 expectedPayloadLen 0
+                    if len <> expectedPayloadLen then
+                        return sprintf "Expected %d bytes, received %d" header.payloadLength len |> Error
+                    else
+                        return Encoding.decode header payload
         with
         | e -> return Error e.Message
     }
