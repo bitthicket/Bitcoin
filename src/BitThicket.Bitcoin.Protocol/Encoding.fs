@@ -1,78 +1,14 @@
 module BitThicket.Bitcoin.Protocol.Encoding
 
 open System
-open System.Buffers.Binary
 open System.Security.Cryptography
 open System.Text
 
 open BitThicket.Bitcoin.Protocol.Protocol
 
-// TODO: make this public, probably move to another file
-module private MemoryUtils =
-    let inline getReadOnlyMemory (arr:'a array) =
-        arr.AsMemory() |> Memory<'a>.op_Implicit
-
-    let inline writeBytes dest (src:ReadOnlyMemory<byte>) =
-        src.Span.CopyTo(dest)
-        src.Length
-
-    let inline writeUInt16 dest i =
-        BinaryPrimitives.WriteUInt16LittleEndian(dest, i)
-        2
-
-    let inline writeUInt16BigEndian dest i =
-        BinaryPrimitives.WriteUInt16BigEndian(dest, i)
-        2
-
-    let inline writeInt32 dest i =
-        BinaryPrimitives.WriteInt32LittleEndian(dest, i)
-        4
-
-    let inline writeUInt32 dest i =
-        BinaryPrimitives.WriteUInt32LittleEndian(dest, i)
-        4
-
-    let inline writeInt64 dest i =
-        BinaryPrimitives.WriteInt64LittleEndian(dest, i)
-        8
-
-    let inline writeUInt64 dest i =
-        BinaryPrimitives.WriteUInt64LittleEndian(dest, i)
-        8
-
-    let getVariableIntLength (i:int64) =
-        if i < 0xfd then 1
-        elif i <= 0xffff then 3
-        elif i <= 0xffffffff then 5
-        else 9
-
-    let inline writeVariableInt (buf:Span<byte>) (i:int64) =
-        if i < 0xfd then
-            buf[0] <- byte i
-            1
-        elif i <= 0xffff then
-            buf[0] <- 0xfduy
-            buf[1] <- byte i
-            buf[2] <- byte (i >>> 8)
-            3
-        elif i <= 0xffffffff then
-            buf[0] <- 0xfeuy
-            buf[1] <- byte i
-            buf[2] <- byte (i >>> 8)
-            buf[3] <- byte (i >>> 16)
-            buf[4] <- byte (i >>> 24)
-            5
-        else
-            buf[0] <- 0xffuy
-            buf[1] <- byte i
-            buf[2] <- byte (i >>> 8)
-            buf[3] <- byte (i >>> 16)
-            buf[4] <- byte (i >>> 24)
-            buf[5] <- byte (i >>> 32)
-            buf[6] <- byte (i >>> 40)
-            buf[7] <- byte (i >>> 48)
-            buf[8] <- byte (i >>> 56)
-            9
+// disable warning about implicit conversions because we're going to have a lot of
+// array/span/memory to ReadOnlySpan/Memory conversions
+#nowarn "3391"
 
 // TODO: this needs to be configurable, injectable
 let private currentNetworkMagic = NETWORK_MAGIC_TESTNET
@@ -81,7 +17,7 @@ let private currentNetworkMagic = NETWORK_MAGIC_TESTNET
 // everything prior to encoding time other than length of variable-length strings.
 // We should be able to pre-compute all the serialization offsets and lengths
 
-let private headerSize = 24
+let headerSize = 24
 
 let private versionPayloadBaseSize =
     [
@@ -98,14 +34,17 @@ let private versionPayloadBaseSize =
         4 //blockHeight
     ] |> List.sum
 
-open MemoryUtils
-
 let private calculatePayloadSize = function
-    | MessagePayload.Version payload ->
+    // Messages
+    | Version payload ->
         versionPayloadBaseSize
         + getVariableIntLength (int64 payload.serverAgent.Length)
         + Encoding.UTF8.GetByteCount(payload.serverAgent)
-    | MessagePayload.VerAck -> 0
+
+    | VerAck -> 0
+
+let private computeChecksum : ReadOnlySpan<byte> -> byte[] =
+       SHA256.HashData >> SHA256.HashData >> fun hash -> hash.AsSpan().Slice(0,4).ToArray()
 
 let private encodeHeader (span:Span<byte>) header =
     let mutable pos = 0
@@ -191,45 +130,72 @@ let private encodeVersionPayload (span:Span<byte>) payload =
 
 
 /// takes a domain model and writes a byte array ready to be sent over the wire
-let encodePeerMessage payload =
-    let payloadSize = calculatePayloadSize payload
-    match payload with
-    | MessagePayload.Version versionPayload ->
-        let buf = headerSize + payloadSize
+let encode msg =
+    let payloadSize = calculatePayloadSize msg
+    let buf = headerSize + payloadSize
                   |> Array.zeroCreate<byte>
+    let headerSpan = buf.AsSpan(0, headerSize)
+    let payloadSpan = buf.AsSpan(headerSize)
 
-        let headerSpan = buf.AsSpan(0, headerSize)
-        let payloadSpan = buf.AsSpan(headerSize)
-
+    match msg with
+    | Version versionPayload ->
         let actualPayloadSize = encodeVersionPayload payloadSpan versionPayload
         if actualPayloadSize <> payloadSize then
             failwithf "payload size mismatch; expected %d, actual %d" payloadSize actualPayloadSize
 
         // TODO: need to make this faster
-        let payloadChecksum = payloadSpan.Slice(0,payloadSize).ToArray()
-                              |> SHA256.HashData
-                              |> SHA256.HashData
-                              |> Array.take 4
-                              |> getReadOnlyMemory
+        let payloadChecksum =
+              payloadSpan.Slice(0,payloadSize)
+              |> Span.op_Implicit
+              |> computeChecksum
 
-        let header = { magic = currentNetworkMagic |> ByteMemoryRef4.op_Implicit
-                       command = Commands.version |> ByteMemoryRef12Max.op_Implicit
+        // be aware of implicit conversions here
+        let header = { magic = currentNetworkMagic //|> ByteMemoryRef4.op_Implicit
+                       command = Commands.version.bytes //|> ByteMemoryRef12Max.op_Implicit
                        payloadLength = uint32 payloadSize
-                       checksum = payloadChecksum |> ByteMemoryRef4.op_Implicit }
+                       checksum = payloadChecksum }
 
         encodeHeader headerSpan header |> ignore
         buf
 
-    | MessagePayload.VerAck ->
-        let buf = headerSize |> Array.zeroCreate<byte>
-        let headerSpan = buf.AsSpan()
-        let header = { magic = currentNetworkMagic |> ByteMemoryRef4.op_Implicit
-                       command = Commands.verack |> ByteMemoryRef12Max.op_Implicit
+
+    | VerAck ->
+        // be aware of implicit conversions here
+        let header = { magic = currentNetworkMagic
+                       command = Commands.verack.bytes
                        payloadLength = 0u
-                       checksum = EMPTY_PAYLOAD_CHECKSUM |> ByteMemoryRef4.op_Implicit }
+                       checksum = EMPTY_PAYLOAD_CHECKSUM }
 
         encodeHeader headerSpan header |> ignore
         buf
 
-let decodePeerMessage (data:ReadOnlySpan<byte>) =
-    VerAck
+let decodeHeader (data:ReadOnlySpan<byte>) =
+       if data.Length <> headerSize then
+           failwithf "header size mismatch; expected %d, actual %d" headerSize data.Length
+
+       // be aware of implicit conversions here
+       { magic = data.Slice(0,4).ToArray()
+         command = data.Slice(4,12).ToArray()
+         payloadLength = BitConverter.ToUInt32 (data.Slice(16,4))
+         checksum = data.Slice(20,4).ToArray() }
+
+let decode (header:MessageHeader) (payload:ReadOnlySpan<byte>) =
+       // check length
+       let expectedPayloadLen = Convert.ToInt32 header.payloadLength
+       if payload.Length <> expectedPayloadLen then
+           failwithf "payload length mismatch; expected %d, actual %d" header.payloadLength payload.Length
+
+       // check checksum
+       let checksum = payload |> computeChecksum
+       if not <| areEqualSpans checksum (header.checksum.AsSpan()) then
+           failwithf "payload checksum mismatch; expected %A, actual %A" header.checksum checksum
+
+       // decode
+       match header.command with
+       | versionCmd when areEqualSpans (versionCmd.AsSpan()) Commands.version.bytes ->
+              // do the things
+              Ok ()
+       | verackCmd when areEqualSpans (verackCmd.AsSpan()) Commands.verack.bytes ->
+              // do the things
+              Ok ()
+       | _ -> Error "unknown command"

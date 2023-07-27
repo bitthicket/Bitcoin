@@ -15,7 +15,7 @@ open BitThicket.Bitcoin.Protocol.Protocol
 [<Fact>]
 let ``basic version paylad test`` () =
     // using example from: https://en.bitcoin.it/wiki/Protocol_documentation#version
-    let payload =
+    let message =
         {
             version = 60002u
             services = NodeServices.Network
@@ -72,7 +72,7 @@ let ``basic version paylad test`` () =
         0xc0uy; 0x3euy; 0x03uy; 0x00uy
     |]
 
-    let actual = Encoding.encodePeerMessage payload
+    let actual = Encoding.encode message
 
     let magicExpected = ArraySegment(expected, 0, 4)
     let magicActual = ArraySegment(actual, 0, 4)
@@ -163,7 +163,7 @@ let ``basic verack payload test`` () =
         0x5duy; 0xf6uy; 0xe0uy; 0xe2uy;
     |]
 
-    let actual = Encoding.encodePeerMessage VerAck
+    let actual = Encoding.encode VerAck
 
     let magicExpected = ArraySegment(expected, 0, 4)
     let magicActual = ArraySegment(actual, 0, 4)

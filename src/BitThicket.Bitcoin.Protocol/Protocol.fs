@@ -1,5 +1,6 @@
 ﻿namespace BitThicket.Bitcoin.Protocol
 
+[<AutoOpen>]
 module Protocol =
 
     open System
@@ -34,8 +35,10 @@ module Protocol =
                     failwith "ByteMemoryRef4: array must be 4 bytes"
                 ByteMemoryRef b
 
-            member self.AsReadOnlyMemory() =
+            member self.AsMemory() =
                 match self with ByteMemoryRef b -> b
+            member self.AsSpan() =
+                match self with ByteMemoryRef b -> b.Span
 
     type ByteMemoryRef12Max = private ByteMemoryRef of ReadOnlyMemory<byte>
         with
@@ -47,12 +50,28 @@ module Protocol =
                 if b.Length > 12 then
                     failwith "ByteMemoryRef12: array must be 12 bytes or less"
                 ByteMemoryRef b
-            member self.AsReadOnlyMemory() =
+
+            member self.AsMemory() =
                 match self with ByteMemoryRef b -> b
+            member self.AsSpan() =
+                match self with ByteMemoryRef b -> b.Span
 
     module Commands =
-        let version = "version" |> Encoding.UTF8.GetBytes
-        let verack = "verack" |> Encoding.UTF8.GetBytes
+        type Command =
+            { text: string
+              bytes: byte[] }
+
+        let private _version = "version"
+        let version = { text = _version
+                        bytes = _version |> Encoding.UTF8.GetBytes }
+
+        let private _verack = "verack"
+        let verack = { text = _verack
+                       bytes = _verack |> Encoding.UTF8.GetBytes }
+
+        let responseMap = Map.ofList [
+            version, verack
+        ]
 
     type MessageHeader =
         { magic: ByteMemoryRef4
@@ -84,7 +103,7 @@ module Protocol =
           serverAgent: string
           blockHeight: uint32 }
 
-    type MessagePayload =
+    type Message =
         | Version of VersionMessage
         | VerAck
 
