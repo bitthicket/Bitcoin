@@ -15,6 +15,21 @@ type BitcoinClient(uri:string) =
     let uri = Uri(uri)
     let socket = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp)
 
+    let resolve (uri:Uri) = async {
+        let! hostAddresses = Async.FromBeginEnd(
+                                    (fun (callback, state) -> Dns.BeginGetHostAddresses(uri.Host, callback, state)),
+                                    Dns.EndGetHostAddresses)
+        return IPEndPoint(hostAddresses[0], uri.Port)
+    }
+
+    let connect () = async {
+        let! ipEndPoint = resolve uri
+        return! Async.FromBeginEnd(
+            (fun (callback, state) -> socket.BeginConnect(ipEndPoint, callback, state)),
+            socket.EndConnect
+        )
+    }
+
     let rec recv (socket:Socket) buf pos len totalReceived = async {
         let! received = Async.FromBeginEnd((fun (callback, state) ->
                                                 socket.BeginReceive(buf, pos, len, SocketFlags.None, callback, state)),
@@ -53,18 +68,22 @@ type BitcoinClient(uri:string) =
         | e -> return Error e.Message
     }
 
+    member this.IsConnected = socket.Connected
+
 
     member this.Connect() = async {
-        let! hostAddresses = Async.FromBeginEnd(
-                                    (fun (callback, state) -> Dns.BeginGetHostAddresses(uri.Host, callback, state)),
-                                    Dns.EndGetHostAddresses)
-        let ipEndPoint = IPEndPoint(hostAddresses[0], uri.Port)
+        try
+            do! connect()
+            return Ok ()
+        with
+            | e -> return Error e.Message
+    }
 
-        // TODO: should I send version after connecting, or let the caller do it?
-
+    member this.Disconnect(?reuseSocket) = async {
+        let reuse = defaultArg reuseSocket true
         return! Async.FromBeginEnd(
-            (fun (callback, state) -> socket.BeginConnect(ipEndPoint, callback, state)),
-            socket.EndConnect
+            (fun (callback, state) -> socket.BeginDisconnect(reuse, callback, state)),
+            socket.EndDisconnect
         )
     }
 
