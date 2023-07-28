@@ -20,10 +20,22 @@ type BitcoinClient(uri:string) =
                                                 socket.BeginReceive(buf, pos, len, SocketFlags.None, callback, state)),
                                             socket.EndReceive)
         if totalReceived + received < len then
-            return! recv socket buf (pos + received) len (totalReceived + received)
+            if received = 0 then
+                failwithf "Connection closed by remote host. Received %d bytes" totalReceived
+                return -1
+            else
+                return! recv socket buf (pos + received) len (totalReceived + received)
         else
             return totalReceived + received
     }
+
+    let rec send (socket:Socket) data = async {
+        let! sent = Async.FromBeginEnd((fun (callback, state) ->
+                                                socket.BeginSend(data, 0, data.Length, SocketFlags.None, callback, state)),
+                                            socket.EndSend)
+        return sent
+    }
+
 
 
     let socketReceive (socket:Socket) (len:int) = async {
@@ -56,12 +68,7 @@ type BitcoinClient(uri:string) =
         )
     }
 
-    member this.Send(data:byte[]) = async {
-        return! Async.FromBeginEnd(
-            (fun (callback, state) -> socket.BeginSend(data, 0, data.Length, SocketFlags.None, callback, state)),
-            socket.EndSend
-        )
-    }
+    member this.Send(data:byte[]) = send socket data
 
     member this.Receive(?expected:Commands.Command) = async {
         try
@@ -98,9 +105,9 @@ type BitcoinClient(uri:string) =
         let encoded = Encoding.encode (Version payload)
         let! _ = this.Send encoded
 
-
-
-        return ()
+        match! this.Receive Commands.verack with
+        | Error err -> return Error err
+        | Ok _ -> return Ok ()
     }
 
 
