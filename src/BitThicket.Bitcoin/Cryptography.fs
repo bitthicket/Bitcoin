@@ -1,14 +1,14 @@
 namespace BitThicket.Bitcoin.Cryptography
 
-module ECDsa =
+module internal ECDsa =
     open System
     open System.Security.Cryptography
     open System.Text
 
-    // TODO: implement RFC 6979
+    open BitThicket.Bitcoin.StringUtil
 
     let BCRYPT_ECDSA_PRIVATE_P256_MAGIC =   0x32534345
-    let BCRYPT_ECDSA_PUBLIC_P256_MAGIC =    0x31534345
+    let BCYRPT_ECDSA_PUBLIC_P256_MAGIC =    0x31534345
 
     type PublicBlob256 =
         { magic : int;
@@ -32,7 +32,7 @@ module ECDsa =
         cng.Key
 
     let inline bytesToPublicEccBlob (bytes:byte[]) =
-        { magic = BCRYPT_ECDSA_PUBLIC_P256_MAGIC;
+        { magic = BCYRPT_ECDSA_PUBLIC_P256_MAGIC;
           keysize = 256;
           cngData = bytes } |> Ok
 
@@ -55,7 +55,7 @@ module ECDsa =
 
     let formatPublicKey (cngKey:CngKey) =
         cngKey.Export(CngKeyBlobFormat.EccPublicBlob).[8..]
-        |> Array.fold Utility.hexFold (StringBuilder("04"))
+        |> Array.fold byteArrayFolder (StringBuilder("04"))
         |> (fun buf -> buf.ToString())
 
     let formatPublicKeyCompressed (cngKey:CngKey) =
@@ -64,5 +64,5 @@ module ECDsa =
                             | 1uy -> StringBuilder("03")
                             | _ -> StringBuilder("02")
 
-        Array.fold Utility.hexFold initialState xbytes
+        Array.fold byteArrayFolder initialState xbytes
         |> (fun buf -> buf.ToString())

@@ -67,7 +67,7 @@ module Base58 =
         data |> Array.append [|0uy|] |> Array.rev |> bigint |> _encode ms
 
     let rec private _decode (s:ReadOnlySpan<char>) (acc:bigint) =
-        if s.Length = 0 then Bits.Converter.GetBytesBE(acc)
+        if s.Length = 0 then BinaryUtil.Converter.GetBytesBE(acc)
         else _decTable[s[0]]
              |> (fun idx -> _58I * acc + idx)
              |> _decode (s.Slice(1))
@@ -78,7 +78,7 @@ module Base58 =
         // to ensure a positive value when the array is round-tripped.
         |> Result.bind (fun (Base58String encoding) ->
                             _decode encoding 0I
-                            |> if data.[0] = '1' then Bits.ensureZeroMsByte else Bits.removeZeroMsBytes
+                            |> if data.[0] = '1' then BinaryUtil.ensureZeroMsByte else BinaryUtil.removeZeroMsBytes
                             |> Ok)
 
 module Base58Check =

@@ -9,11 +9,13 @@
     <Compile Include="AssemblyInfo.fs" />
     <Compile Include="Bip39.fs" />
     <Compile Include="Util.fs" />
+    <Compile Include="Cryptography.fs" />
     <Compile Include="Base58.fs" />
     <Compile Include="Encoding.fs" />
     <Compile Include="Key.fs" />
     <Compile Include="Address.fs" />
     <Compile Include="Script.fs" />
+    <Compile Include="Peer.fs" />
     <None Include="Script.fsx" />
   </ItemGroup>
   <ItemGroup>

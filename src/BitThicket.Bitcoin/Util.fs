@@ -1,6 +1,6 @@
 namespace BitThicket.Bitcoin
 
-module internal Bits =
+module internal BinaryUtil =
   open System
 
   [<AbstractClass; Sealed>]
@@ -40,7 +40,7 @@ module internal Bits =
       |> if BitConverter.IsLittleEndian then Array.rev else id
 
   /// takes a byte array in big-endian order and ensures
-  /// that the most significant bit is set to zero by prepending a 0-byte 
+  /// that the most significant bit is set to zero by prepending a 0-byte
   /// if the msb is 1
   let ensureZeroMsBit (bytes:byte array) =
     match bytes.[0] &&& 0x80uy with
@@ -57,3 +57,29 @@ module internal Bits =
   let removeZeroMsBytes (bytes:byte array) =
     let nonZeroIndex = Array.findIndex (fun b -> b > 0uy) bytes
     bytes.[nonZeroIndex..]
+
+module internal StringUtil =
+  open System
+  open System.Globalization
+  open System.Text
+
+  let stringToBytes hexString =
+        let (|Invalid|Empty|NextByte|) = function
+                                         | (s:string) when s.Length % 2 = 1 -> Invalid s
+                                         | (s:string) when s.Length = 0 -> Empty s
+                                         | (s:string) -> NextByte s.[s.Length-2..s.Length-1]
+
+        let rec s2b acc s =
+            match s with
+            | Empty _ -> Ok acc
+            | Invalid _ -> Error "invalid string"
+            | NextByte hex ->
+                try
+                    s2b (Array.concat [[|Byte.Parse(hex, NumberStyles.HexNumber)|]; acc]) s.[0..s.Length-3]
+                with
+                | :? System.FormatException as fex -> Error fex.Message
+                | ex -> Error ex.Message
+
+        s2b (Array.zeroCreate<byte> 0) hexString
+
+  let byteArrayFolder sb (b:byte) = Printf.kbprintf (fun _ -> sb) sb "%02x" b
