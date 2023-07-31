@@ -1,18 +1,29 @@
-module Tests
+namespace BitThicket.Bitcoin.Client
 
 open System
+
+open Microsoft.Extensions.Logging
+
 open Swensen.Unquote
 open Xunit
+open Xunit.Abstractions
 
 open BitThicket.Bitcoin.Client
+open BitThicket.Bitcoin.Protocol
 
-let bitcoinNodeUri = "tcp://localhost:18333"
+type BitcoinClientTests(testOutputHelper:ITestOutputHelper) =
 
-[<Fact>]
-let ``simple tcp connect test to testnet node`` () = async {
-    use client = new BitcoinClient(bitcoinNodeUri)
-    let! result = client.Connect()
-    do! client.Disconnect()
+    let bitcoinNodeUri = "tcp://localhost:18333"
 
-    test <@ Result.isOk result  @>
-}
+    [<Fact; Trait("Category","Integration")>]
+    let ``simple tcp connect test to testnet node`` () = task {
+        let logger = testOutputHelper.ToLogger()
+        use client = new BitcoinClient(bitcoinNodeUri, logger = logger)
+        let! result = client.Connect()
+
+        test <@ Result.isOk result && client.IsConnected @>
+
+        do! client.Disconnect()
+    }
+
+

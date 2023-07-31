@@ -131,6 +131,8 @@ let private encodeVersionPayload (span:Span<byte>) payload =
 
 
 /// takes a domain model and writes a byte array ready to be sent over the wire
+/// the result of this encoding *includes* a header, which is generated from the
+/// provided domain model
 let encode msg =
     let payloadSize = calculatePayloadSize msg
     let buf = headerSize + payloadSize
@@ -193,7 +195,7 @@ let decode (header:MessageHeader) (payload:ReadOnlySpan<byte>) =
        // | versionCmd when areEqualSpans (versionCmd.AsSpan()) Commands.version.bytes ->
        //        // do the things
        //        Ok ()
-       | verackCmd when areEqualSpans (verackCmd.AsSpan()) Commands.verack.bytes ->
+       | verackCmd when areEqualSpans (verackCmd.AsSpan()) (Commands.verack.bytes.AsSpan()) ->
               // do the things
               Ok VerAck
        | _ -> Error "unknown command"

@@ -5,7 +5,7 @@ nuget Argu
 nuget FAKE
 nuget FSharp.Core ~> 7.0.0
 nuget Hopac
-nuget FsPickler
+nuget Microsoft.Extensions.Logging.Console
 
 group Build
 source https://api.nuget.org/v3/index.json
@@ -17,3 +17,4 @@ nuget xunit.runner.visualstudio
 nuget Unquote
 nuget Microsoft.NET.Test.Sdk
 nuget FsUnit.xUnit
+nuget MartinCostello.Logging.XUnit
