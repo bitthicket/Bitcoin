@@ -18,8 +18,5 @@
     <Compile Include="Peer.fs" />
     <None Include="Script.fsx" />
   </ItemGroup>
-  <ItemGroup>
-    <ProjectReference Include="..\BitThicket.Bitcoin.Cryptography\BitThicket.Bitcoin.Cryptography.fsproj" />
-  </ItemGroup>
   <Import Project="..\..\.paket\Paket.Restore.targets" />
 </Project>

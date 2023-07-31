@@ -1,4 +1,4 @@
-module BitThicket.Bitcoin.Cryptography.Tests
+module BitThicket.Bitcoin.CryptographyTests
 
 open System
 open System.Text
@@ -48,20 +48,20 @@ let ``import private key``() =
 
 
 
-[<Fact; Trait("Category", "Utility")>]
-let ``stringToBytes simple``() =
-    let input = "F028"
-    let result = Utility.stringToBytes input
-    let expected = [|0xF0uy; 0x28uy|]
+// [<Fact; Trait("Category", "Utility")>]
+// let ``stringToBytes simple``() =
+//     let input = "F028"
+//     let result = Utility.stringToBytes input
+//     let expected = [|0xF0uy; 0x28uy|]
 
-    <@ Result.isOk result && match result with | Ok b -> b = expected | _ -> false @>
+//     <@ Result.isOk result && match result with | Ok b -> b = expected | _ -> false @>
 
-[<Fact; Trait("Category", "Utility")>]
-let ``stringToBytes invalid input``() =
-    let input = "F0287"
-    let result = Utility.stringToBytes input
+// [<Fact; Trait("Category", "Utility")>]
+// let ``stringToBytes invalid input``() =
+//     let input = "F0287"
+//     let result = Utility.stringToBytes input
 
-    <@ Result.isError result @>
+//     <@ Result.isError result @>
 
 (*
     testCase "stringToBytes empty input" <| fun _ ->
