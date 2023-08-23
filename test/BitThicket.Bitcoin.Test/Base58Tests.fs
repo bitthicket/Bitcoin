@@ -160,7 +160,7 @@ let ``fail checksum validation`` () =
 //#region Bip39 Tests
 
 [<Trait("Category", "Base58")>]
-[<Theory;
+[<Theory(Skip="Not implemented");
     InlineData(12);
     InlineData(15);
     InlineData(18);

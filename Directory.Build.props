@@ -1,0 +1,19 @@
+<Project>
+    <UsingTask TaskName="ReplaceFileText" TaskFactory="RoslynCodeTaskFactory" AssemblyFile="$(MSBuildToolsPath)\Microsoft.Build.Tasks.Core.dll">
+        <ParameterGroup>
+            <Filename ParameterType="System.String" Required="true" />
+            <Match ParameterType="System.String" Required="true" />
+            <Replacement ParameterType="System.String" Required="true" />
+        </ParameterGroup>
+        <Task>
+            <Using Namespace="System" />
+            <Using Namespace="System.IO" />
+            <Using Namespace="System.Text.RegularExpressions" />
+            <Code Type="Fragment" Language="cs">
+                <![CDATA[
+                    File.WriteAllText(Filename, Regex.Replace(File.ReadAllText(Filename), Match, Replacement));
+                ]]>
+            </Code>
+        </Task>
+    </UsingTask>
+</Project>

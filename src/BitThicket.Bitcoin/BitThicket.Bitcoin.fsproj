@@ -6,6 +6,10 @@
     <DebugType>portable</DebugType>
   </PropertyGroup>
   <ItemGroup>
+    <Compile Include="..\..\paket-files\TheAngryByrd\FsLibLog\src\FsLibLog\FsLibLog.fs">
+      <Paket>True</Paket>
+      <Link>paket-files/FsLibLog.fs</Link>
+    </Compile>
     <Compile Include="AssemblyInfo.fs" />
     <Compile Include="Bip39.fs" />
     <Compile Include="Util.fs" />
@@ -18,5 +22,11 @@
     <Compile Include="Peer.fs" />
     <None Include="Script.fsx" />
   </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\BitThicket.Bitcoin.Protocol\BitThicket.Bitcoin.Protocol.fsproj" />
+  </ItemGroup>
+  <Target Name="ReplaceFileText" BeforeTargets="Build">
+    <ReplaceFileText Filename="paket-files/FsLibLog.fs" Match="FsLibLog" Replacement="BitThicket.Bitcoin.Logging" />
+  </Target>
   <Import Project="..\..\.paket\Paket.Restore.targets" />
 </Project>

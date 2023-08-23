@@ -10,6 +10,7 @@
     <None Include="paket.references" />
     <Compile Include="Base58Tests.fs" />
     <Compile Include="CryptographyTests.fs" />
+    <Compile Include="ProtocolTests.fs"/>
     <Compile Include="Main.fs" />
     <None Include="App.config" />
   </ItemGroup>
