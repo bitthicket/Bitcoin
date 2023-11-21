@@ -4,9 +4,10 @@
     <OutputType>Library</OutputType>
     <TargetFramework>net7.0</TargetFramework>
     <DebugType>portable</DebugType>
+    <FsLibLogPath>..\..\paket-files\TheAngryByrd\FsLibLog\src\FsLibLog\FsLibLog.fs</FsLibLogPath>
   </PropertyGroup>
   <ItemGroup>
-    <Compile Include="..\..\paket-files\TheAngryByrd\FsLibLog\src\FsLibLog\FsLibLog.fs">
+    <Compile Include="$(FsLibLogPath)">
       <Paket>True</Paket>
       <Link>paket-files/FsLibLog.fs</Link>
     </Compile>
@@ -26,7 +27,7 @@
     <ProjectReference Include="..\BitThicket.Bitcoin.Protocol\BitThicket.Bitcoin.Protocol.fsproj" />
   </ItemGroup>
   <Target Name="ReplaceFileText" BeforeTargets="Build">
-    <ReplaceFileText Filename="paket-files/FsLibLog.fs" Match="FsLibLog" Replacement="BitThicket.Bitcoin.Logging" />
+    <ReplaceFileText Filename="$(FsLibLogPath)" Match="FsLibLog" Replacement="BitThicket.Bitcoin.Logging" />
   </Target>
   <Import Project="..\..\.paket\Paket.Restore.targets" />
 </Project>

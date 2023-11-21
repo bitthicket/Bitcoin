@@ -6,3 +6,4 @@ xunit.runner.visualstudio
 Unquote
 Microsoft.NET.Test.Sdk
 FsUnit.xUnit
+Microsoft.Extensions.Logging
